@@ -6,7 +6,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // --- Avatar Configurations ---
   // Sostituisci questi percorsi con i link corretti o i file locali delle immagini
-  const AVATAR_USER = "";
+  const AVATAR_USER = "./startrek.png";
   const AVATAR_BOT = "./data.jpg";
 
 

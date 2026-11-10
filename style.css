@@ -1224,3 +1224,8 @@ body {
   gap: 10px;
   justify-content: flex-start;
 }
+
+.user-avatar {
+  filter: brightness(0) invert(1);
+  /* Rende l'immagine completamente bianca */
+}
