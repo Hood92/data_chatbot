@@ -1,187 +1,62 @@
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Data - Assistente Starfleet U.S.S. Enterprise</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#04111d">
+  <meta name="description" content="Una mappa interattiva dei sistemi planetari più vicini alla Terra.">
+  <title>Orbite — atlante stellare</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <!-- Centered Chat Container Wrapper -->
-  <main class="chat-wrapper">
-    <div class="chat-card" id="chatCard">
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="Orbite, pagina iniziale">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="currentColor" stroke-width="1.5"/><ellipse cx="18" cy="18" rx="7" ry="15" stroke="currentColor" stroke-width="1.5" transform="rotate(55 18 18)"/><circle cx="18" cy="18" r="3" fill="currentColor"/></svg></span>
+        <span class="brand-name">orbite<span>.</span><small>ATLANTE STELLARE</small></span>
+      </a>
+      <div class="topbar-center"><span class="live-dot"></span> SISTEMA DI NAVIGAZIONE <span class="topbar-divider">/</span> <span id="topSystem">VICINATO SOLARE</span></div>
+      <div class="topbar-right"><span class="signal"><i></i><i></i><i></i></span><span>SEGNALE OTTIMALE</span><span class="profile-mark">E</span></div>
+    </header>
 
-      <!-- HEADER -->
-      <header class="chat-header">
-        <div class="header-left">
-          <div class="avatar-container" title="Tenente Comandante Data">
-            <!-- Data Android Avatar / Starfleet Emblem -->
-            <div class="avatar-badge">
-              <svg viewBox="0 0 40 40" class="avatar-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="20" cy="20" r="19" fill="#061523" stroke="#b8f93a" stroke-width="1.5" />
-                <!-- Star Trek Delta & Android Positronic Motif -->
-                <path d="M20 7L27 30L20 25L13 30L20 7Z" fill="#b8f93a" />
-                <ellipse cx="20" cy="18" rx="2.5" ry="4" fill="#061523" />
-              </svg>
-              <span class="status-indicator" title="In linea"></span>
-            </div>
-          </div>
-          <div class="header-info">
-            <h1 class="bot-name">Data</h1>
-            <p class="bot-status">
-              <span>U.S.S. Enterprise NCC-1701-D</span>
-              <span class="status-dot">•</span>
-              <span class="status-text">Attivo ora</span>
-            </p>
-          </div>
+    <main class="dashboard" id="home">
+      <section class="map-panel" aria-label="Mappa dei sistemi stellari">
+        <div class="map-grain"></div><div class="starfield" aria-hidden="true"></div>
+        <div class="map-heading">
+          <div><div class="eyebrow"><span class="eyebrow-line"></span> MAPPATURA INTERSTELLARE <span class="eyebrow-index" id="mapIndex">01 — 26</span></div><h1>Il vicinato<br><span>stellare.</span></h1><p class="map-intro">26 sistemi vicini. Mondi da scoprire.<br>Il prossimo salto è tuo.</p></div>
+          <div class="distance-chip"><span class="distance-icon">✳</span><span><small>RAGGIO MAPPATO</small><strong>15 <em>anni luce</em></strong></span></div>
         </div>
+        <svg class="constellation-lines" id="constellationSvg" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="route-line" aria-hidden="true"><span class="route-progress"></span><span class="ship" id="ship"><svg viewBox="0 0 42 42"><path d="M21 3c8 8 12 19 12 29l-12-6-12 6C9 22 13 11 21 3Z" fill="#b8f93a"/><path d="m17 29-3 9 7-5 7 5-3-9" fill="#77c938"/><circle cx="21" cy="18" r="3" fill="#061523"/></svg></span></div>
+        <div class="system-nodes" id="systemNodes"></div>
+        <div class="map-controls"><button id="zoomOut" aria-label="Riduci zoom">−</button><span>1.0×</span><button id="zoomIn" aria-label="Aumenta zoom">+</button><span class="controls-divider"></span><button id="resetMap" class="reset-button" aria-label="Ripristina la mappa"><svg viewBox="0 0 20 20" fill="none"><path d="M3 9a7 7 0 1 1 1.5 5M3 4v5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+        <div class="map-footnote"><span class="footnote-mark">✳</span> POSIZIONI SCHEMATICHE <span class="footnote-divider">·</span> DISTANZE REALI NELLE ETICHETTE</div>
+      </section>
 
-        <div class="header-actions">
-          <button type="button" class="icon-btn" id="searchBtn" title="Cerca nella memoria positronica"
-            aria-label="Cerca">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </button>
-        </div>
-      </header>
-
-      <!-- SEARCH BAR OVERLAY (Hidden by default, togglable) -->
-      <div class="search-overlay" id="searchOverlay">
-        <input type="text" id="searchInput" placeholder="Cerca nella cronologia messaggi..." autocomplete="off">
-        <button type="button" id="closeSearchBtn" class="close-search-btn" aria-label="Chiudi ricerca">&times;</button>
-      </div>
-
-      <!-- CHAT MESSAGES BODY -->
-      <div class="chat-messages" id="chatMessages" role="log" aria-live="polite">
-
-        <!-- DATE BADGE -->
-        <div class="date-badge-wrapper">
-          <span class="date-badge">
-            <span class="badge-dot">•</span>
-            OGGI
-          </span>
-        </div>
-
-        <!-- MESSAGE 1: DATA (BOT) -->
-        <div class="message-row bot-row" data-id="msg-1">
-          <div class="bot-bubble-container">
-            <img src="./data.jpg" alt="Data Avatar" class="chat-avatar bot-avatar">
-            <div class="message-bubble bot-bubble">
-              <div class="bubble-text">
-                Ciao, sono il tuo assistente personale, sono superiore, sotto molti aspetti, ma ci rinuncerei volentieri
-                per essere un umano
-              </div>
-              <div class="bubble-meta">
-                <span class="message-time" id="initial-time"></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div> <!-- Chiusura corretta di chat-messages -->
-
-
-
-      <!-- FOOTER / INPUT BAR -->
-      <footer class="chat-footer">
-        <form class="input-form" id="chatForm">
-          <button type="button" class="footer-btn" id="attachBtn" title="Aggiungi file o dati diagnostici"
-            aria-label="Allega file">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
-              stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-          </button>
-
-          <button type="button" class="footer-btn" id="emojiBtn" title="Inserisci emoji" aria-label="Emoji">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-              <line x1="9" y1="9" x2="9.01" y2="9"></line>
-              <line x1="15" y1="9" x2="15.01" y2="9"></line>
-            </svg>
-          </button>
-
-          <div class="input-wrapper">
-            <input type="text" id="messageInput" placeholder="Scrivi un messaggio..." autocomplete="off"
-              aria-label="Scrivi un messaggio a Data">
-          </div>
-
-          <button type="button" class="footer-btn mic-btn" id="micBtn" title="Attiva canale vocale"
-            aria-label="Microfono">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-              <line x1="12" y1="19" x2="12" y2="23"></line>
-              <line x1="8" y1="23" x2="16" y2="23"></line>
-            </svg>
-          </button>
-
-          <button type="submit" class="send-btn" id="sendBtn" title="Invia trasmissione" aria-label="Invia messaggio">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-            </svg>
-          </button>
-        </form>
-      </footer>
-
-      <!-- AUDIO CHIRP FEEDBACK (LCARS) -->
-      <div class="audio-feedback-badge" id="audioBadge" title="Audio Starfleet attivo">
-        <span>LCARS 24.7</span>
-      </div>
-
-      <!-- MODAL PREVIEW (Per allegato PDF) -->
-      <div class="modal-overlay" id="fileModal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>Anteprima Documento Starfleet</h3>
-            <button type="button" class="modal-close" id="closeModalBtn">&times;</button>
-          </div>
-          <div class="modal-body">
-            <div class="pdf-mock-page">
-              <div class="pdf-tag">COMMISSIONE FEDERAZIONE COMMERCIO - Q3</div>
-              <h4>REPORT VENDITE TRIMESTRALE (NCC-1701-D)</h4>
-              <p>Elaborazione effettuata dalla rete neurale positronica del Tenente Comandante Data.</p>
-              <div class="pdf-stats-row">
-                <div class="stat-box">
-                  <span class="label">Crescita Netta</span>
-                  <span class="val">+18.4%</span>
-                </div>
-                <div class="stat-box">
-                  <span class="label">Precisione Stime</span>
-                  <span class="val">99.97%</span>
-                </div>
-                <div class="stat-box">
-                  <span class="label">Stato Meeting</span>
-                  <span class="val">Ore 15:30</span>
-                </div>
-              </div>
-              <div class="pdf-dummy-lines">
-                <span></span><span></span><span></span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div> <!-- Chiusura di chatCard -->
-  </main>
-
-  <!-- Script logic -->
+      <aside class="explorer-panel" aria-label="Dettagli del sistema selezionato">
+        <div class="panel-topline"><span><i class="live-dot"></i> ARCHIVIO ESPLORATIVO</span><button class="panel-menu" aria-label="Menu">•••</button></div>
+        <div class="system-summary"><div class="system-overline">SISTEMA SELEZIONATO <span id="systemNumber">01 / 26</span></div><h2 id="systemName">Sistema<br>Solare<span>.</span></h2><p id="systemDescription">La nostra casa. Una stella, otto pianeti e il solo mondo finora conosciuto a ospitare la vita.</p><div class="system-stats"><div><small>DALLA TERRA</small><strong id="systemDistance">0,00 <em>AL</em></strong></div><div><small>STELLA</small><strong id="systemStar">G2V <em>gialla</em></strong></div><div><small>PIANETI</small><strong id="systemPlanetCount">08 <em>catalogati</em></strong></div></div></div>
+        <div class="planet-section"><div class="section-heading"><span>ATLANTE DEI PIANETI</span><span id="planetCountLabel">08 CORPI</span></div><div class="planet-list" id="planetList"></div></div>
+        <div class="planet-detail" id="planetDetail" aria-live="polite"><div class="detail-empty"><span>↖</span> Seleziona un pianeta<br>per consultare la scheda</div></div>
+        <div class="panel-footer"><span class="footer-emblem">✳</span><span>DATI ASTRONOMICI<br><b>CATALOGO ORBITE · ED. 2025</b></span><span class="footer-version">v2.4.01</span></div>
+      </aside>
+    </main>
+    <footer class="bottom-bar"><span>© 2025 ORBITE EXPLORATION</span><span>ESPLORA CON CURIOSITÀ <i>✳</i></span><span>UNIVERSO LOCALE <b>·</b> VIA LATTEA</span></footer>
+  </div>
+  <button class="data-launcher" id="dataLauncher" type="button" aria-label="Apri la chat con Data" aria-expanded="false">
+    <span class="launcher-avatar"><img src="data.jpg" alt=""></span><span class="launcher-label">CHIEDI A DATA</span><span class="launcher-status"></span>
+  </button>
+  <section class="data-chat" id="dataChat" aria-label="Chat con Data" aria-hidden="true">
+    <header class="data-chat-header"><div class="data-avatar"><img src="data.jpg" alt=""></div><div class="data-chat-title"><strong>Data</strong><span><i></i> U.S.S. Enterprise · online</span></div><button class="chat-close" id="chatClose" type="button" aria-label="Chiudi la chat">×</button></header>
+    <div class="data-chat-context" id="chatContext">CONTESTO: SISTEMA SOLARE</div>
+    <div class="data-chat-messages" id="chatMessages" role="log" aria-live="polite"><div class="chat-message bot-message"><span class="message-avatar"><img src="data.jpg" alt=""></span><div class="message-bubble"><span class="message-sender">DATA</span><p>Salve. Sono pronto a condividere i dati dell’archivio stellare. Può chiedermi informazioni sul sistema o sul pianeta selezionato.</p></div></div></div>
+    <div class="chat-suggestions"><button type="button" data-prompt="Parlami del pianeta selezionato">Il pianeta selezionato</button><button type="button" data-prompt="Quali mondi potrebbero ospitare la vita?">Mondi abitabili</button></div>
+    <form class="data-chat-form" id="dataChatForm"><input id="chatInput" type="text" placeholder="Chiedi qualcosa a Data…" autocomplete="off" aria-label="Scrivi un messaggio a Data"><button type="submit" aria-label="Invia messaggio"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21 23 12 2 3v7l15 2-15 2z"/></svg></button></form>
+    <div class="chat-disclaimer">DATA ASTRONOMICI A SCOPO DIVULGATIVO · LE STIME SONO INDICATE COME TALI</div>
+  </section>
   <script src="main.js"></script>
 </body>
-
 </html>
