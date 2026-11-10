@@ -1,0 +1,12 @@
+{
+  "name": "orbite-atlante-stellare",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Atlante stellare interattivo con assistente Data",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
