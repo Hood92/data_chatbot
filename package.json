@@ -4,9 +4,16 @@
   "private": true,
   "description": "Atlante stellare interattivo con assistente Data",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^5.3.0",
+    "openai": "^7.55.0"
   }
 }

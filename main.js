@@ -1010,6 +1010,22 @@ function applyMapFilterClasses() {
     node.classList.toggle("filter-match", Boolean(matches));
     node.classList.toggle("filtered-out", Boolean(activeMapFilter && !matches));
   });
+  document.querySelectorAll(".planet-card").forEach((card) => {
+    const planet = systems[activeSystem]?.planets.find(
+      (item) => item.name === card.dataset.planet,
+    );
+    const systemMatches = activeMapFilter?.matches.has(activeSystem);
+    const matches = !activeMapFilter || !systemMatches || !activeMapFilter.kind ||
+      (planet && planetMatchesMapFilter(planet, activeMapFilter.kind));
+    card.classList.toggle("filter-planet-match", Boolean(activeMapFilter && systemMatches && matches));
+    card.classList.toggle("filter-planet-out", Boolean(activeMapFilter && systemMatches && !matches));
+  });
+  document.querySelectorAll("[data-planet-filter]").forEach((button) => {
+    button.setAttribute(
+      "aria-pressed",
+      String(button.dataset.planetFilter === activeMapFilter?.kind),
+    );
+  });
 }
 
 function clearMapFilter() {
@@ -1017,72 +1033,73 @@ function clearMapFilter() {
   document
     .querySelectorAll(".system-node")
     .forEach((node) => node.classList.remove("filter-match", "filtered-out"));
+  document.querySelectorAll(".planet-card").forEach((card) =>
+    card.classList.remove("filter-planet-match", "filter-planet-out"),
+  );
+  document.querySelectorAll("[data-planet-filter]").forEach((button) =>
+    button.setAttribute("aria-pressed", "false"),
+  );
   document.getElementById("mapFilterNotice").hidden = true;
 }
 
-function filterSystemsFromQuestion(question) {
-  const normalized = question
-    .toLocaleLowerCase("it")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-  const distanceMatch = normalized.match(
-    /(?:entro|raggio(?: di)?|meno di|sotto i)\s*(\d+(?:[.,]\d+)?)\s*(?:anni luce|a\.?l\.?)/,
+function planetMatchesMapFilter(planet, kind) {
+  const profile = planetProfiles[planet.name] || {};
+  const text = normalizeItalian(
+    `${profile.class || ""} ${profile.composition || ""} ${profile.atmosphere || ""} ${planet.type || ""}`,
   );
-  const asksMap = /mostram|filtra|cerca|trova|evidenzia|quali sistem/.test(
-      normalized,
-    ),
-    asksSystems = /sistem|stelle vicin|pianet/.test(normalized);
-  if (
-    !asksMap ||
-    !asksSystems ||
-    (!distanceMatch &&
-      !/roccios|gassos|ghiacci|abitabil|terrestr/.test(normalized))
-  )
-    return null;
-  const maxDistance = distanceMatch
-    ? Number(distanceMatch[1].replace(",", "."))
-    : Infinity;
-  let kind = null;
-  if (/roccios|terrestr/.test(normalized)) kind = "rocky";
-  else if (/gassos/.test(normalized)) kind = "gas";
-  else if (/ghiacci/.test(normalized)) kind = "ice";
-  else if (/abitabil/.test(normalized)) kind = "habitable";
-  const matches = new Set();
-  for (const [id, system] of Object.entries(systems)) {
-    const distance = Number(system.distance.replace(",", "."));
-    if (distance > maxDistance) continue;
-    if (!kind) {
-      matches.add(id);
-      continue;
-    }
-    const hasMatch = system.planets.some((planet) => {
-      const profile = planetProfiles[planet.name] || {},
-        type = `${profile.class || ""} ${planet.type}`.toLocaleLowerCase("it");
-      if (kind === "rocky")
-        return /roccios|terrestr|super-terra|sub-terrestr/.test(type);
-      if (kind === "gas") return /gassos|gigante/.test(type);
-      if (kind === "ice") return /ghiacci/.test(type);
-      return /abitabile|zona temperata/.test(
-        `${profile.habitability || ""} ${planet.type}`.toLocaleLowerCase("it"),
-      );
-    });
-    if (hasMatch) matches.add(id);
+  if (kind === "rocky") return /roccios|terrestr|super[- ]terra|sub[- ]terrestr/.test(text);
+  if (kind === "gas") return /gigante gassoso|gassos/.test(text);
+  if (kind === "hydrogen") return /idrogeno|h(?:2|\u2082)/.test(text);
+  if (kind === "ice") return /ghiacci|acqua|ammoniaca|metano|volatil/.test(text);
+  if (kind === "methane") return /metano|ch(?:4|\u2084)/.test(text);
+  if (kind === "water") return /acqua|h(?:2|\u2082)o|ammoniaca/.test(text);
+  if (kind === "metal") return /ferro|metal|silicat/.test(text);
+  if (kind === "habitable")
+    return /abitabile|zona temperata/.test(
+      normalizeItalian(`${profile.habitability || ""} ${planet.type || ""}`),
+    );
+  return true;
+}
+
+function setMapPlanetFilter(kind) {
+  if (activeMapFilter?.kind === kind) {
+    clearMapFilter();
+    return;
   }
-  activeMapFilter = { matches, maxDistance, kind };
+  const matches = new Set();
+  let planetCount = 0;
+  for (const [id, system] of Object.entries(systems)) {
+    const count = system.planets.filter((planet) =>
+      planetMatchesMapFilter(planet, kind),
+    ).length;
+    if (count) {
+      matches.add(id);
+      planetCount += count;
+    }
+  }
+  activeMapFilter = { matches, kind, maxDistance: Infinity };
   applyMapFilterClasses();
   const labels = {
     rocky: "pianeti rocciosi",
     gas: "giganti gassosi",
-    ice: "giganti ghiacciati",
-    habitable: "mondi in zona temperata",
+    hydrogen: "mondi con idrogeno o elio rilevati nei dati",
+    ice: "mondi ricchi di ghiacci o composti volatili",
+    methane: "mondi con metano nei dati catalogati",
+    water: "mondi con acqua o ammoniaca nei dati catalogati",
+    metal: "mondi con silicati o metalli indicati nei dati",
   };
-  const description = `${matches.size} sistemi ${maxDistance < Infinity ? `entro ${maxDistance} a.l.` : "nel catalogo"}${kind ? ` con ${labels[kind]}` : ""}`;
-  document.getElementById("mapFilterText").textContent = description;
+  document.getElementById("mapFilterText").textContent =
+    `${matches.size} sistemi · ${planetCount} pianeti compatibili · ${labels[kind]}`;
   document.getElementById("mapFilterNotice").hidden = false;
-  return matches.size
-    ? `Filtro applicato: ${description}. Ho evidenziato i sistemi corrispondenti sulla mappa.`
-    : `Filtro applicato: ${description}. Nessun sistema del catalogo soddisfa tutti i criteri.`;
 }
+document.querySelectorAll("[data-planet-filter]").forEach((button) => {
+  button.addEventListener("click", () =>
+    setMapPlanetFilter(button.dataset.planetFilter),
+  );
+});
+document
+  .getElementById("resetPlanetFilters")
+  .addEventListener("click", clearMapFilter);
 
 document
   .getElementById("clearMapFilter")
@@ -1316,6 +1333,7 @@ function renderSystem(id) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "planet-card";
+      button.dataset.planet = planet.name;
       button.setAttribute("aria-label", `Apri la scheda di ${planet.name}`);
       button.innerHTML = `<span class="planet-orb" style="--planet-color:${planet.color}"></span><span class="planet-card-name">${planet.name}</span>`;
       button.addEventListener("click", () => showPlanet(planet, button));
@@ -1329,6 +1347,7 @@ function renderSystem(id) {
       '<div class="detail-empty"><span>✳</span> Archivio in aggiornamento<br>Nuove osservazioni in arrivo</div>';
   }
   updateChatContext();
+  applyMapFilterClasses();
   positionShip(id);
 }
 
@@ -1402,17 +1421,20 @@ fetch("/api/status")
     apiConfigured = Boolean(status?.configured);
     const label = document.getElementById("aiStatus");
     label.textContent = apiConfigured
-      ? `IA online · ${status.model}`
+      ? `IA configurata · ${status.model}`
       : "archivio locale";
     label.classList.toggle("ready", apiConfigured);
   })
   .catch(() => {
     apiConfigured = false;
+    const label = document.getElementById("aiStatus");
+    label.textContent = "IA non raggiungibile";
+    label.classList.remove("ready");
   });
 function updateChatContext() {
   const system = systems[activeSystem];
   document.getElementById("chatContext").textContent =
-    `CONTESTO: ${system.shortName}${activePlanet ? ` · ${activePlanet.name.toUpperCase()}` : ""}`;
+    `ARCHIVIO DISPONIBILE · ${system.shortName}`;
 }
 function toggleChat(open) {
   chat.classList.toggle("open", open);
@@ -1518,7 +1540,33 @@ function questionMentionsSystem(question, id) {
 }
 function calculateTravel(question) {
   const text = normalizeItalian(question);
-  if (!/viagg|tempo.*luce|luce.*tempo/.test(text)) return null;
+  if (!/viagg|tempo.*(?:luce|arriv|raggiung)|(?:arriv|raggiung).*tempo|quanto.*tempo.*(?:arriv|raggiung|per)/.test(text)) return null;
+  let speed = 1;
+  const percent = text.match(
+    /(\d+(?:[.,]\d+)?)\s*(?:%|per cento)\s*(?:della )?(?:velocita della luce|di c)?/,
+  );
+  const fraction = text.match(/(\d+(?:[.,]\d+)?)\s*c\b/);
+  const hasSpecifiedSpeed = Boolean(percent || fraction);
+  if (percent) speed = Number(percent[1].replace(",", ".")) / 100;
+  else if (fraction) speed = Number(fraction[1].replace(",", "."));
+  const fromJupiterMoon =
+    /(?:lun[ae] di giove|satelliti? di giove|io\b|europa\b|ganymede\b|ganimede\b|callisto\b)/.test(text);
+  if (fromJupiterMoon && /terra/.test(text)) {
+    if (speed <= 0 || speed > 1)
+      return {
+        text: "Per questa stima indichi una velocità compresa fra zero e la velocità della luce, per esempio 0,1c.",
+        calculation: "",
+      };
+    const nearMinutes = (4.2 * 8.3167) / speed;
+    const farMinutes = (6.2 * 8.3167) / speed;
+    const calculation = hasSpecifiedSpeed
+      ? `Stima geometrica: distanza Terra–Giove ≈ 4,2–6,2 UA; 1 UA corrisponde a circa 8,32 minuti-luce. Formula: t = d / v. Alla velocità ${speed}c il tempo ideale è ${nearMinutes.toFixed(0)}–${farMinutes.toFixed(0)} minuti, senza accelerazione o frenata.`
+      : `Stima geometrica: distanza Terra–Giove ≈ 4,2–6,2 UA; 1 UA corrisponde a circa 8,32 minuti-luce, quindi il solo segnale luminoso impiega circa ${nearMinutes.toFixed(0)}–${farMinutes.toFixed(0)} minuti. La domanda non specifica velocità o propulsione: un veicolo reale impiega molto di più. La sonda NASA Juno impiegò circa cinque anni nel tragitto Terra–Giove.`;
+    return {
+      text: "",
+      calculation,
+    };
+  }
   const named = Object.keys(systems).filter((id) =>
     questionMentionsSystem(question, id),
   );
@@ -1537,13 +1585,6 @@ function calculateTravel(question) {
       text: "Per calcolare la distanza fra due sistemi diversi da Sol servono coordinate tridimensionali precise. La mappa è schematica, quindi non uso le sue posizioni grafiche per stimarla.",
       calculation: "",
     };
-  let speed = 1;
-  const percent = text.match(
-    /(\d+(?:[.,]\d+)?)\s*(?:%|per cento)\s*(?:della )?(?:velocita della luce|di c)?/,
-  );
-  const fraction = text.match(/(\d+(?:[.,]\d+)?)\s*c\b/);
-  if (percent) speed = Number(percent[1].replace(",", ".")) / 100;
-  else if (fraction) speed = Number(fraction[1].replace(",", "."));
   if (speed <= 0 || speed > 1)
     return {
       text: "Per questo calcolo uso velocità comprese fra 0 e c. Indica una frazione valida, per esempio 0,1c.",
@@ -1557,41 +1598,6 @@ function calculateTravel(question) {
     calculation: result,
   };
 }
-function calculateWhatIf(question) {
-  const text = normalizeItalian(question);
-  if (
-    /terra/.test(text) &&
-    /proxima(?: centauri)? b/.test(text) &&
-    /orbit/.test(text)
-  ) {
-    const luminosity = 0.00155,
-      orbit = 0.0485,
-      flux = luminosity / (orbit * orbit),
-      effective = 255 * Math.pow(flux, 0.25);
-    return `Stima semplificata per l’orbita di Proxima b: flusso stellare ≈ ${flux.toFixed(2)} volte quello ricevuto dalla Terra; temperatura di equilibrio ≈ ${Math.round(effective)} K (circa ${Math.round(effective - 273.15)} °C), senza effetto serra. Formula: flusso relativo = luminosità stellare / distanza orbitale². Il risultato non è una temperatura superficiale: atmosfera, albedo, rotazione e attività della nana rossa possono cambiarla molto.`;
-  }
-  return "Uno scenario controfattuale richiede almeno il corpo di destinazione e l’ipotesi da cambiare. Specifica, per esempio, “Terra all’orbita di Proxima b” o “viaggio verso Sirio a 0,1c”.";
-}
-function makeLocalLogbook(question) {
-  const context = contextForQuestion(question),
-    planet = context.selectedPlanet,
-    system = context.selectedSystem;
-  if (!planet)
-    return `DIARIO DI BORDO · ${system.name}\nDATI: distanza dalla Terra ${system.distanceFromEarthLightYears} anni luce; stella ${system.stellarClass}, ${system.starType}.\nSCENA IPOTETICA: la nave entra nel sistema e avvia la ricognizione. Nessuna sonda umana ha raggiunto questo sistema.`;
-  return `DIARIO DI BORDO · ${planet.name}\nDATI: ${planet.classification}; massa/dimensioni ${planet.diameterOrMass}; orbita ${planet.orbitFromStar}; periodo ${planet.orbitalPeriod}. Atmosfera: ${planet.atmosphere || "non caratterizzata"}.\nSCENA IPOTETICA: la U.S.S. Enterprise mantiene una distanza prudente mentre i sensori raccolgono dati. Questa sequenza è narrativa; la descrizione fisica si limita ai dati elencati.`;
-}
-function inferMode(question) {
-  const text = normalizeItalian(question);
-  if (/diario di bordo|genera.*diario|rapporto di esplorazione/.test(text))
-    return "diary";
-  if (
-    /cosa succederebbe|cosa accadrebbe|what.?if|scenario|se la terra|se la luna|se .* si trovasse/.test(
-      text,
-    )
-  )
-    return "whatif";
-  return "chat";
-}
 function contextForQuestion(question) {
   const text = normalizeItalian(question),
     targetId = findSystemInQuestion(question) || activeSystem,
@@ -1603,8 +1609,8 @@ function contextForQuestion(question) {
         text.includes(normalizeItalian(item.name)) ||
         (item.name === "Proxima b" && /proxima(?: centauri)? b/.test(text)),
     );
-  const planet =
-    namedPlanet || (targetId === activeSystem ? activePlanet : null);
+  const asksPlanetFacts = /atmosfera|temperatura|massa|diametro|orbita|composizione|abitabil|caratteristiche|informazioni|descrivi|parlami|spiegami|dimmi di|dati sul|dati di/.test(text);
+  const planet = asksPlanetFacts ? namedPlanet : null;
   const profile = planet ? planetProfiles[planet.name] || null : null;
   return {
     selectedSystem: {
@@ -1638,14 +1644,13 @@ function contextForQuestion(question) {
     })),
   };
 }
-async function askOpenAI(question, mode, calculation, contextOverride = null) {
+async function askOpenAI(question, calculation) {
   const response = await fetch("/api/assistant", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       question,
-      mode,
-      context: contextOverride || contextForQuestion(question),
+      context: contextForQuestion(question),
       calculation,
       history: conversation.slice(-9, -1),
     }),
@@ -1655,103 +1660,10 @@ async function askOpenAI(question, mode, calculation, contextOverride = null) {
     throw new Error(
       result.error || "Data non è riuscito a consultare il servizio IA.",
     );
+  const label = document.getElementById("aiStatus");
+  label.textContent = `IA connessa - ${result.model || "modello attivo"}`;
+  label.classList.add("ready");
   return result.text;
-}
-function isMapSearch(question) {
-  return (
-    /mostra|trova|elenca|cerca|filtra|evidenzia|quali|which|find|show|list/i.test(
-      question,
-    ) && /sistem|stell|planet|pianet|mond/i.test(question)
-  );
-}
-function compactMapCatalog() {
-  return Object.entries(systems).map(([id, system]) => ({
-    id,
-    name: system.shortName,
-    distanceLy: Number(system.distance.replace(",", ".")),
-    planets: system.planets.map((planet) => ({
-      name: planet.name,
-      type: planet.type,
-      class: planetProfiles[planet.name]?.class || planet.type,
-    })),
-  }));
-}
-async function applyAiMapFilter(question) {
-  const specification = await askOpenAI(question, "filter", "", {
-    catalog: compactMapCatalog(),
-  });
-  const match = specification.match(
-    /FILTER\s*\|\s*(rocky|gas|ice|habitable|all)\s*\|\s*(all|\d+(?:[.,]\d+)?)/i,
-  );
-  if (!match)
-    throw new Error(
-      "Non ho capito i criteri del filtro. Riformula la ricerca con categoria e distanza.",
-    );
-  const distance =
-    match[2].toLowerCase() === "all"
-      ? 1000
-      : Number(match[2].replace(",", "."));
-  const terms = {
-    rocky: "pianeti rocciosi",
-    gas: "giganti gassosi",
-    ice: "giganti ghiacciati",
-    habitable: "mondi abitabili",
-    all: "",
-  };
-  const result = filterSystemsFromQuestion(
-    `Mostrami i sistemi entro ${distance} anni luce ${terms[match[1].toLowerCase()] || ""}`,
-  );
-  return result || "Filtro applicato alla mappa.";
-}
-function answerData(question) {
-  const normalized = question
-    .toLocaleLowerCase("it")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-  const system = systems[activeSystem];
-  const namedPlanet = Object.values(systems)
-    .flatMap((item) => item.planets)
-    .find(
-      (planet) =>
-        normalized.includes(
-          planet.name
-            .toLocaleLowerCase("it")
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, ""),
-        ) ||
-        (planet.name === "Proxima b" &&
-          /proxima(?: centauri)? b/.test(normalized)),
-    );
-  const planet = namedPlanet || activePlanet;
-  if (/ciao|salve|buongiorno|chi sei/.test(normalized))
-    return "Sono il tenente comandante Data, ufficiale scientifico della U.S.S. Enterprise. Posso consultare con lei i dati del sistema selezionato.";
-  if (/abitabil|vita|vivere/.test(normalized))
-    return "La Terra è l’unico mondo in cui la vita sia stata confermata. Proxima b orbita nella zona temperata della sua stella, ma non conosciamo la sua atmosfera né se possa mantenere acqua liquida. La posizione orbitale, da sola, non dimostra l’abitabilità.";
-  if (
-    /quali pianet|quali mond|tipi di pianet|differenza tra.*(roccios|gassos|ghiacci)|sono roccios|sono gassos|sono ghiacci/.test(
-      normalized,
-    )
-  )
-    return "Nel Sistema Solare i pianeti rocciosi sono Mercurio, Venere, Terra e Marte; i giganti gassosi sono Giove e Saturno; Urano e Nettuno sono giganti ghiacciati, ricchi di composti volatili come acqua, ammoniaca e metano. Per gli esopianeti, composizione e struttura sono spesso stime: non ne abbiamo osservato direttamente la superficie.";
-  if (/lune|satellit/.test(normalized) && planet) {
-    const p = planetProfiles[planet.name];
-    return `${planet.name}: ${p?.moons || "numero non noto"} lune note nel catalogo. Il numero può cambiare con nuove scoperte.`;
-  }
-  if (/atmosfer/.test(normalized) && planet) {
-    const p = planetProfiles[planet.name];
-    return `Per ${planet.name}, l’archivio riporta: ${p?.atmosphere || "atmosfera non caratterizzata"}. Per molti esopianeti questi dati non sono ancora misurabili.`;
-  }
-  if (/temperatur|cald|fredd/.test(normalized) && planet) {
-    const p = planetProfiles[planet.name];
-    return `La temperatura indicata per ${planet.name} è ${p?.temperature || "non nota"}. ${p?.habitability || ""} Le temperature degli esopianeti sono spesso stime, non misure dirette.`;
-  }
-  if (/sistema|stella|distanza|quanto lontan/.test(normalized) && !planet)
-    return `${system.shortName}: ${system.distance} anni luce dalla Terra. Stella catalogata: ${system.star}, ${system.starType}. Nel nostro archivio risultano ${system.count} pianeti; i candidati sono distinti dalle conferme nelle rispettive schede.`;
-  if (planet) {
-    const p = planetProfiles[planet.name] || {};
-    return `${planet.name} è classificato come ${p.class || planet.type.toLowerCase()}. ${planet.description} Composizione: ${p.composition || "non determinata"}. Atmosfera: ${p.atmosphere || "non caratterizzata"}. Temperatura: ${p.temperature || "non nota"}; gravità: ${p.gravity || "non nota"}; lune: ${p.moons || "non note"}. Distanza dalla Terra: ${calculateEarthDistance(planet, system)}. Abitabilità: ${p.habitability || "dati insufficienti"}`;
-  }
-  return `Sto consultando l’archivio di ${system.shortName}. ${system.description} Può chiedermi della stella, della distanza, dei pianeti o della loro abitabilità.`;
 }
 async function sendToData(text) {
   const question = text.trim();
@@ -1759,55 +1671,35 @@ async function sendToData(text) {
   chatInput.value = "";
   addMessage(question, "user");
   conversation.push({ role: "user", content: question });
-  const filtered = filterSystemsFromQuestion(question);
-  if (filtered) {
-    addMessage(filtered, "bot");
-    conversation.push({ role: "assistant", content: filtered });
+  if (!apiConfigured) {
+    const notice = "Il servizio IA non risulta configurato. Per ricevere risposte generate da Data, verifichi OPENROUTER_API_KEY nel file .env e riavvii il server.";
+    addMessage(notice, "bot");
+    conversation.push({ role: "assistant", content: notice });
     return;
   }
-  if (apiConfigured && isMapSearch(question)) {
-    const thinking = addThinking();
-    try {
-      const answer = await applyAiMapFilter(question);
-      thinking.remove();
-      addMessage(answer, "bot");
-      conversation.push({ role: "assistant", content: answer });
-    } catch (error) {
-      thinking.remove();
-      addMessage(error.message, "bot");
-      conversation.push({ role: "assistant", content: error.message });
-    }
-    return;
-  }
-  const mode = inferMode(question),
-    travel = calculateTravel(question),
-    thinking = addThinking();
+  const travel = calculateTravel(question);
+  const thinking = addThinking();
   try {
-    let answer;
-    if (apiConfigured)
-      answer = await askOpenAI(question, mode, travel?.calculation || "");
-    else if (travel) answer = travel.text;
-    else if (mode === "whatif") answer = calculateWhatIf(question);
-    else if (mode === "diary") answer = makeLocalLogbook(question);
-    else answer = answerData(question);
+    const answer = await askOpenAI(question, travel?.calculation || "");
     thinking.remove();
     addMessage(answer, "bot");
     conversation.push({ role: "assistant", content: answer });
   } catch (error) {
     thinking.remove();
-    const fallback = travel?.text || answerData(question);
-    addMessage(`${fallback}\n\nNota: ${error.message}`, "bot");
-    conversation.push({ role: "assistant", content: fallback });
+    const label = document.getElementById("aiStatus");
+    label.textContent = "IA non raggiungibile";
+    label.classList.remove("ready");
+    const detail = /failed to fetch|networkerror|load failed/i.test(error.message)
+      ? "Il collegamento al server IA non e riuscito. Verifichi che il server sia attivo e riprovi."
+      : error.message;
+    const notice = `Non posso formulare una risposta di Data senza raggiungere il modello IA. ${detail}`;
+    addMessage(notice, "bot");
+    conversation.push({ role: "assistant", content: notice });
   }
 }
 document.getElementById("dataChatForm").addEventListener("submit", (event) => {
   event.preventDefault();
   sendToData(chatInput.value);
 });
-document
-  .querySelectorAll(".chat-suggestions button")
-  .forEach((button) =>
-    button.addEventListener("click", () => sendToData(button.dataset.prompt)),
-  );
 renderSystemNodes();
 renderSystem("sol");

@@ -1196,26 +1196,6 @@ body {
   color: #77c5c6;
   text-align: right;
 }
-.chat-suggestions {
-  display: flex;
-  gap: 7px;
-  padding: 0 12px 10px;
-  overflow-x: auto;
-}
-.chat-suggestions button {
-  white-space: nowrap;
-  padding: 7px 9px;
-  border: 1px solid rgba(184, 249, 58, 0.25);
-  border-radius: 999px;
-  background: #0a2230;
-  color: #b5d078;
-  font: 9px var(--font);
-  cursor: pointer;
-}
-.chat-suggestions button:hover {
-  border-color: var(--lime);
-  color: var(--lime);
-}
 .data-chat-form {
   display: flex;
   align-items: center;

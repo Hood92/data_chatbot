@@ -23,6 +23,42 @@
   font-size: 16px;
   color: var(--lime);
 }
+.map-class-filters {
+  position: absolute;
+  z-index: 6;
+  top: 36px;
+  right: 28px;
+  max-width: 56%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.map-class-filters > span {
+  margin-right: 4px;
+  color: #78939e;
+  font: 8px var(--mono);
+  letter-spacing: .8px;
+}
+.map-class-filters button {
+  padding: 7px 9px;
+  border: 1px solid rgba(137, 183, 191, .2);
+  border-radius: 999px;
+  background: rgba(5, 20, 31, .86);
+  color: #aec2c2;
+  font: 8px var(--mono);
+  cursor: pointer;
+  backdrop-filter: blur(9px);
+  transition: border-color .18s, color .18s, background .18s, box-shadow .18s;
+}
+.map-class-filters button:hover,
+.map-class-filters button[aria-pressed="true"] {
+  border-color: var(--lime);
+  background: rgba(184, 249, 58, .12);
+  color: var(--lime);
+  box-shadow: 0 0 15px rgba(184, 249, 58, .14);
+}
 .map-filter-notice button {
   margin-left: auto;
   border: 0;
@@ -41,6 +77,18 @@
   box-shadow:
     0 0 0 6px rgba(184, 249, 58, 0.13),
     0 0 18px 7px rgba(184, 249, 58, 0.65);
+}
+.planet-card.filter-planet-out {
+  opacity: .24;
+  filter: grayscale(.8);
+}
+.planet-card.filter-planet-match:not(.selected) {
+  border-color: rgba(184, 249, 58, .44);
+  background: rgba(184, 249, 58, .07);
+  box-shadow: 0 0 16px rgba(184, 249, 58, .1);
+}
+.planet-card.filter-planet-match .planet-orb {
+  box-shadow: 0 0 0 4px rgba(184, 249, 58, .1), 0 0 16px 5px rgba(184, 249, 58, .35);
 }
 .map-panel.warp:after {
   content: "";
@@ -73,7 +121,7 @@
   opacity: 0.35;
   transition: opacity 0.2s;
 }
-.@keyframes warpFlash {
+@keyframes warpFlash {
   0% {
     opacity: 0;
     transform: scale(0.35);
@@ -227,6 +275,27 @@
   }
 }
 @media (max-width: 760px) {
+  .map-class-filters {
+    top: 185px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 5px;
+    overflow-x: auto;
+    padding: 2px 0 5px;
+    scrollbar-width: none;
+  }
+  .map-class-filters::-webkit-scrollbar { display: none; }
+  .map-class-filters > span {
+    flex: none;
+    width: auto;
+  }
+  .map-class-filters button {
+    padding: 6px 8px;
+    font-size: 7px;
+  }
   .map-filter-notice {
     left: 12px;
     bottom: 62px;

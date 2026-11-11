@@ -1,64 +1,276 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#04111d">
-  <meta name="description" content="Una mappa interattiva dei sistemi planetari più vicini alla Terra.">
-  <title>Orbite — atlante stellare</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="features.css">
-</head>
-<body>
-  <div class="app-shell">
-    <header class="topbar">
-      <a class="brand" href="#home" aria-label="Orbite, pagina iniziale">
-        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="currentColor" stroke-width="1.5"/><ellipse cx="18" cy="18" rx="7" ry="15" stroke="currentColor" stroke-width="1.5" transform="rotate(55 18 18)"/><circle cx="18" cy="18" r="3" fill="currentColor"/></svg></span>
-        <span class="brand-name">orbite<span>.</span><small>ATLANTE STELLARE</small></span>
-      </a>
-      <div class="topbar-center"><span class="live-dot"></span> SISTEMA DI NAVIGAZIONE <span class="topbar-divider">/</span> <span id="topSystem">VICINATO SOLARE</span></div>
-      <div class="topbar-right"><span class="signal"><i></i><i></i><i></i></span><span>SEGNALE OTTIMALE</span><span class="profile-mark">E</span></div>
-    </header>
-
-    <main class="dashboard" id="home">
-      <section class="map-panel" aria-label="Mappa dei sistemi stellari">
-        <div class="map-grain"></div><div class="starfield" aria-hidden="true"></div>
-        <div class="map-heading">
-          <div><div class="eyebrow"><span class="eyebrow-line"></span> MAPPATURA INTERSTELLARE <span class="eyebrow-index" id="mapIndex">01 — 26</span></div><h1>Il vicinato<br><span>stellare.</span></h1><p class="map-intro">26 sistemi vicini. Mondi da scoprire.<br>Il prossimo salto è tuo.</p></div>
-          <div class="distance-chip"><span class="distance-icon">✳</span><span><small>RAGGIO MAPPATO</small><strong>15 <em>anni luce</em></strong></span></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#04111d" />
+    <meta
+      name="description"
+      content="Una mappa interattiva dei sistemi planetari più vicini alla Terra."
+    />
+    <title>Orbite — atlante stellare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="features.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#home" aria-label="Orbite, pagina iniziale">
+          <span class="brand-mark" aria-hidden="true"
+            ><svg viewBox="0 0 36 36" fill="none">
+              <circle
+                cx="18"
+                cy="18"
+                r="15"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <ellipse
+                cx="18"
+                cy="18"
+                rx="7"
+                ry="15"
+                stroke="currentColor"
+                stroke-width="1.5"
+                transform="rotate(55 18 18)"
+              />
+              <circle cx="18" cy="18" r="3" fill="currentColor" /></svg
+          ></span>
+          <span class="brand-name"
+            >orbite<span>.</span><small>ATLANTE STELLARE</small></span
+          >
+        </a>
+        <div class="topbar-center">
+          <span class="live-dot"></span> SISTEMA DI NAVIGAZIONE
+          <span class="topbar-divider">/</span>
+          <span id="topSystem">VICINATO SOLARE</span>
         </div>
-        <svg class="constellation-lines" id="constellationSvg" preserveAspectRatio="none" aria-hidden="true"></svg>
-        <div class="route-line" aria-hidden="true"><span class="route-progress"></span><span class="ship" id="ship"><svg viewBox="0 0 42 42"><path d="M21 3c8 8 12 19 12 29l-12-6-12 6C9 22 13 11 21 3Z" fill="#b8f93a"/><path d="m17 29-3 9 7-5 7 5-3-9" fill="#77c938"/><circle cx="21" cy="18" r="3" fill="#061523"/></svg></span></div>
-        <div class="system-nodes" id="systemNodes"></div>
-        <div class="map-filter-notice" id="mapFilterNotice" hidden><span class="filter-notice-icon">⌕</span><span id="mapFilterText"></span><button id="clearMapFilter" type="button" aria-label="Rimuovi filtro mappa">×</button></div>
-        <div class="map-controls"><button id="zoomOut" aria-label="Riduci zoom">−</button><span>1.0×</span><button id="zoomIn" aria-label="Aumenta zoom">+</button><span class="controls-divider"></span><button id="resetMap" class="reset-button" aria-label="Ripristina la mappa"><svg viewBox="0 0 20 20" fill="none"><path d="M3 9a7 7 0 1 1 1.5 5M3 4v5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
-        <div class="map-footnote"><span class="footnote-mark">✳</span> POSIZIONI SCHEMATICHE <span class="footnote-divider">·</span> DISTANZE REALI NELLE ETICHETTE</div>
-      </section>
+        <div class="topbar-right">
+          <span class="signal"><i></i><i></i><i></i></span
+          ><span>SEGNALE OTTIMALE</span><span class="profile-mark">E</span>
+        </div>
+      </header>
 
-      <aside class="explorer-panel" aria-label="Dettagli del sistema selezionato">
-        <div class="panel-topline"><span><i class="live-dot"></i> ARCHIVIO ESPLORATIVO</span><button class="panel-menu" aria-label="Menu">•••</button></div>
-        <div class="system-summary"><div class="system-overline">SISTEMA SELEZIONATO <span id="systemNumber">01 / 26</span></div><h2 id="systemName">Sistema<br>Solare<span>.</span></h2><p id="systemDescription">La nostra casa. Una stella, otto pianeti e il solo mondo finora conosciuto a ospitare la vita.</p><div class="system-stats"><div><small>DALLA TERRA</small><strong id="systemDistance">0,00 <em>AL</em></strong></div><div><small>STELLA</small><strong id="systemStar">G2V <em>gialla</em></strong></div><div><small>PIANETI</small><strong id="systemPlanetCount">08 <em>catalogati</em></strong></div></div></div>
-        <div class="planet-section"><div class="section-heading"><span>ATLANTE DEI PIANETI</span><span id="planetCountLabel">08 CORPI</span></div><div class="planet-list" id="planetList"></div></div>
-        <div class="planet-detail" id="planetDetail" aria-live="polite"><div class="detail-empty"><span>↖</span> Seleziona un pianeta<br>per consultare la scheda</div></div>
-        <div class="panel-footer"><span class="footer-emblem">✳</span><span>DATI ASTRONOMICI<br><b>CATALOGO ORBITE · ED. 2025</b></span><span class="footer-version">v2.4.01</span></div>
-      </aside>
-    </main>
-    <footer class="bottom-bar"><span>© 2025 ORBITE EXPLORATION</span><span>ESPLORA CON CURIOSITÀ <i>✳</i></span><span>UNIVERSO LOCALE <b>·</b> VIA LATTEA</span></footer>
-  </div>
-  <button class="data-launcher" id="dataLauncher" type="button" aria-label="Apri la chat con Data" aria-expanded="false">
-    <span class="launcher-avatar"><img src="data.jpg" alt=""></span><span class="launcher-label">CHIEDI A DATA</span><span class="launcher-status"></span>
-  </button>
-  <section class="data-chat" id="dataChat" aria-label="Chat con Data" aria-hidden="true">
-    <header class="data-chat-header"><div class="data-avatar"><img src="data.jpg" alt=""></div><div class="data-chat-title"><strong>Data</strong><span><i></i> U.S.S. Enterprise · <b id="aiStatus">archivio locale</b></span></div><button class="chat-close" id="chatClose" type="button" aria-label="Chiudi la chat">×</button></header>
-    <div class="data-chat-context" id="chatContext">CONTESTO: SISTEMA SOLARE</div>
-    <div class="data-chat-messages" id="chatMessages" role="log" aria-live="polite"><div class="chat-message bot-message"><span class="message-avatar"><img src="data.jpg" alt=""></span><div class="message-bubble"><span class="message-sender">DATA</span><p>Salve. Sono pronto a condividere i dati dell’archivio stellare. Può chiedermi informazioni sul sistema o sul pianeta selezionato.</p></div></div></div>
-    <div class="chat-suggestions"><button type="button" data-prompt="Filtra i sistemi entro 10 anni luce con pianeti rocciosi">Roccosi entro 10 a.l.</button><button type="button" data-prompt="Calcola il tempo di viaggio alla velocità della luce da Sol a Sirio">Tempo per Sirio</button><button type="button" data-prompt="Genera un diario di bordo del pianeta selezionato">Diario di bordo</button></div>
-    <form class="data-chat-form" id="dataChatForm"><input id="chatInput" type="text" placeholder="Chiedi qualcosa a Data…" autocomplete="off" aria-label="Scrivi un messaggio a Data"><button type="submit" aria-label="Invia messaggio"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21 23 12 2 3v7l15 2-15 2z"/></svg></button></form>
-    <div class="chat-disclaimer">DATA ASTRONOMICI A SCOPO DIVULGATIVO · LE STIME SONO INDICATE COME TALI</div>
-  </section>
-  <script src="main.js"></script>
-</body>
+      <main class="dashboard" id="home">
+        <section class="map-panel" aria-label="Mappa dei sistemi stellari">
+          <div class="map-grain"></div>
+          <div class="starfield" aria-hidden="true"></div>
+          <div class="map-heading">
+            <div>
+              <div class="eyebrow">
+                <span class="eyebrow-line"></span> MAPPATURA INTERSTELLARE
+                <span class="eyebrow-index" id="mapIndex">01 — 26</span>
+              </div>
+              <h1>Il vicinato<br /><span>stellare.</span></h1>
+              <p class="map-intro">
+                26 sistemi vicini. Mondi da scoprire.<br />Il prossimo salto è
+                tuo.
+              </p>
+            </div>
+            <div class="distance-chip">
+              <span class="distance-icon">✳</span
+              ><span
+                ><small>RAGGIO MAPPATO</small
+                ><strong>15 <em>anni luce</em></strong></span
+              >
+            </div>
+          </div>
+          <svg
+            class="constellation-lines"
+            id="constellationSvg"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          ></svg>
+          <div class="map-class-filters" role="group" aria-label="Filtra i sistemi per composizione planetaria">
+            <span>COMPOSIZIONE</span>
+            <button type="button" data-planet-filter="rocky">Rocciosi</button>
+            <button type="button" data-planet-filter="gas">Gassosi</button>
+            <button type="button" data-planet-filter="hydrogen">Idrogeno</button>
+            <button type="button" data-planet-filter="ice">Ghiacciati</button>
+            <button type="button" data-planet-filter="methane">Metano</button>
+            <button type="button" data-planet-filter="water">Acqua / ammoniaca</button>
+            <button type="button" data-planet-filter="metal">Silicati / metalli</button>
+            <button type="button" id="resetPlanetFilters">Reset</button>
+          </div>
+          <div class="route-line" aria-hidden="true">
+            <span class="route-progress"></span
+            ><span class="ship" id="ship"
+              ><svg viewBox="0 0 42 42">
+                <path
+                  d="M21 3c8 8 12 19 12 29l-12-6-12 6C9 22 13 11 21 3Z"
+                  fill="#b8f93a"
+                />
+                <path d="m17 29-3 9 7-5 7 5-3-9" fill="#77c938" />
+                <circle cx="21" cy="18" r="3" fill="#061523" /></svg
+            ></span>
+          </div>
+          <div class="system-nodes" id="systemNodes"></div>
+          <div class="map-filter-notice" id="mapFilterNotice" hidden>
+            <span class="filter-notice-icon">⌕</span
+            ><span id="mapFilterText"></span
+            ><button
+              id="clearMapFilter"
+              type="button"
+              aria-label="Rimuovi filtro mappa"
+            >
+              ×
+            </button>
+          </div>
+          <div class="map-controls">
+            <button id="zoomOut" aria-label="Riduci zoom">−</button
+            ><span>1.0×</span
+            ><button id="zoomIn" aria-label="Aumenta zoom">+</button
+            ><span class="controls-divider"></span
+            ><button
+              id="resetMap"
+              class="reset-button"
+              aria-label="Ripristina la mappa"
+            >
+              <svg viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M3 9a7 7 0 1 1 1.5 5M3 4v5h5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="map-footnote">
+            <span class="footnote-mark">✳</span> POSIZIONI SCHEMATICHE
+            <span class="footnote-divider">·</span> DISTANZE REALI NELLE
+            ETICHETTE
+          </div>
+        </section>
+
+        <aside
+          class="explorer-panel"
+          aria-label="Dettagli del sistema selezionato"
+        >
+          <div class="panel-topline">
+            <span><i class="live-dot"></i> ARCHIVIO ESPLORATIVO</span
+            ><button class="panel-menu" aria-label="Menu">•••</button>
+          </div>
+          <div class="system-summary">
+            <div class="system-overline">
+              SISTEMA SELEZIONATO <span id="systemNumber">01 / 26</span>
+            </div>
+            <h2 id="systemName">Sistema<br />Solare<span>.</span></h2>
+            <p id="systemDescription">
+              La nostra casa. Una stella, otto pianeti e il solo mondo finora
+              conosciuto a ospitare la vita.
+            </p>
+            <div class="system-stats">
+              <div>
+                <small>DALLA TERRA</small
+                ><strong id="systemDistance">0,00 <em>AL</em></strong>
+              </div>
+              <div>
+                <small>STELLA</small
+                ><strong id="systemStar">G2V <em>gialla</em></strong>
+              </div>
+              <div>
+                <small>PIANETI</small
+                ><strong id="systemPlanetCount">08 <em>catalogati</em></strong>
+              </div>
+            </div>
+          </div>
+          <div class="planet-section">
+            <div class="section-heading">
+              <span>ATLANTE DEI PIANETI</span
+              ><span id="planetCountLabel">08 CORPI</span>
+            </div>
+            <div class="planet-list" id="planetList"></div>
+          </div>
+          <div class="planet-detail" id="planetDetail" aria-live="polite">
+            <div class="detail-empty">
+              <span>↖</span> Seleziona un pianeta<br />per consultare la scheda
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="footer-emblem">✳</span
+            ><span>DATI ASTRONOMICI<br /><b>CATALOGO ORBITE · ED. 2025</b></span
+            ><span class="footer-version">v2.4.01</span>
+          </div>
+        </aside>
+      </main>
+      <footer class="bottom-bar">
+        <span>© 2025 ORBITE EXPLORATION</span
+        ><span>ESPLORA CON CURIOSITÀ <i>✳</i></span
+        ><span>UNIVERSO LOCALE <b>·</b> VIA LATTEA</span>
+      </footer>
+    </div>
+    <button
+      class="data-launcher"
+      id="dataLauncher"
+      type="button"
+      aria-label="Apri la chat con Data"
+      aria-expanded="false"
+    >
+      <span class="launcher-avatar"><img src="data.jpg" alt="" /></span
+      ><span class="launcher-label">CHIEDI A DATA</span
+      ><span class="launcher-status"></span>
+    </button>
+    <section
+      class="data-chat"
+      id="dataChat"
+      aria-label="Chat con Data"
+      aria-hidden="true"
+    >
+      <header class="data-chat-header">
+        <div class="data-avatar"><img src="data.jpg" alt="" /></div>
+        <div class="data-chat-title">
+          <strong>Data</strong
+          ><span
+            ><i></i> U.S.S. Enterprise ·
+            <b id="aiStatus">archivio locale</b></span
+          >
+        </div>
+        <button
+          class="chat-close"
+          id="chatClose"
+          type="button"
+          aria-label="Chiudi la chat"
+        >
+          ×
+        </button>
+      </header>
+      <div class="data-chat-context" id="chatContext">
+        CONTESTO: SISTEMA SOLARE
+      </div>
+      <div class="data-chat-messages" id="chatMessages" role="log" aria-live="polite">
+        <div class="chat-message bot-message">
+          <span class="message-avatar"><img src="data.jpg" alt="" /></span>
+          <div class="message-bubble">
+            <span class="message-sender">DATA</span>
+            <p>Salve. Sono il Tenente Comandante Data. Posso assisterla con quesiti di astronomia, esplorazione spaziale e scenari di fanta-astronomia.</p>
+          </div>
+        </div>
+      </div>
+<form class="data-chat-form" id="dataChatForm">
+        <input
+          id="chatInput"
+          type="text"
+          placeholder="Chiedi qualcosa a Data…"
+          autocomplete="off"
+          aria-label="Scrivi un messaggio a Data"
+        /><button type="submit" aria-label="Invia messaggio">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2 21 23 12 2 3v7l15 2-15 2z" />
+          </svg>
+        </button>
+      </form>
+      <div class="chat-disclaimer">
+        DATA ASTRONOMICI A SCOPO DIVULGATIVO · LE STIME SONO INDICATE COME TALI
+      </div>
+    </section>
+    <script src="main.js"></script>
+  </body>
 </html>
