@@ -4,11 +4,11 @@ const systems = {
     name: "Sistema<br>Solare<span>.</span>",
     shortName: "VICINATO SOLARE",
     description:
-      "La nostra casa. Una stella, otto pianeti e il solo mondo finora conosciuto a ospitare la vita.",
+      "La nostra casa: otto pianeti maggiori e cinque pianeti nani, con il solo mondo finora conosciuto a ospitare la vita.",
     distance: "0,00",
     star: "G2V",
     starType: "gialla",
-    count: "08",
+    count: "13",
     planets: [
       {
         name: "Mercurio",
@@ -90,6 +90,11 @@ const systems = {
         description:
           "Il pianeta maggiore più lontano dal Sole: venti supersonici attraversano la sua atmosfera blu.",
       },
+      { name: "Cerere", color: "#a7a39b", type: "Pianeta nano roccioso", diameter: "940 km", year: "4,6 anni", distance: "2,77 UA", description: "Il più grande corpo della fascia principale degli asteroidi. Dawn ha rilevato sali e ghiaccio d'acqua nel sottosuolo." },
+      { name: "Plutone", color: "#c4a78c", type: "Pianeta nano roccioso e ghiacciato", diameter: "2.377 km", year: "248 anni", distance: "39,5 UA", description: "Un mondo della fascia di Kuiper con montagne di ghiaccio d'acqua e pianure di azoto; New Horizons lo ha sorvolato nel 2015." },
+      { name: "Haumea", color: "#b8cad0", type: "Pianeta nano ghiacciato", diameter: "≈ 1.600 km", year: "284 anni", distance: "43 UA", description: "Corpo allungato in rapida rotazione nella fascia di Kuiper, dotato di anello e di due lune note." },
+      { name: "Makemake", color: "#c98666", type: "Pianeta nano ghiacciato", diameter: "≈ 1.430 km", year: "306 anni", distance: "45,8 UA", description: "Uno dei maggiori oggetti trans-nettuniani conosciuti; la superficie è ricca di ghiacci volatili, soprattutto metano." },
+      { name: "Eris", color: "#d8d5cf", type: "Pianeta nano ghiacciato", diameter: "≈ 2.326 km", year: "558 anni", distance: "67,8 UA", description: "Un pianeta nano massiccio del disco diffuso, accompagnato dalla luna Dysnomia e caratterizzato da una superficie molto riflettente." },
     ],
   },
   alpha: {
@@ -865,6 +870,26 @@ const missionsByPlanet = {
   ],
 };
 
+// Distanze e classificazioni dei buchi neri sono reali; le coordinate della mappa restano schematiche.
+const mapObjects = [
+  { id: "bh-gaia1", kind: "blackhole", name: "Gaia BH1", distance: "1.560 A.L.", detail: "Buco nero stellare in Ofiuco, il più vicino noto con compagna stellare in orbita ampia.", source: "https://www.esa.int/Science_Exploration/Space_Science/Gaia/Gaia_discovers_a_new_family_of_black_holes" },
+  { id: "bh-gaia2", kind: "blackhole", name: "Gaia BH2", distance: "3.800 A.L.", detail: "Buco nero stellare nella costellazione del Centauro, individuato grazie al moto della sua stella compagna.", source: "https://www.esa.int/Science_Exploration/Space_Science/Gaia/Gaia_discovers_a_new_family_of_black_holes" },
+  { id: "bh-cygx1", kind: "blackhole", name: "Cygnus X-1", distance: "~7.200 A.L.", detail: "Una delle prime sorgenti identificate come buco nero stellare; è un sistema binario a raggi X.", source: "https://science.nasa.gov/universe/black-holes/" },
+  { id: "bh-sgra", kind: "blackhole", name: "Sagittarius A*", distance: "~26.000 A.L.", detail: "Buco nero supermassiccio al centro della Via Lattea, con massa di circa quattro milioni di Soli.", source: "https://science.nasa.gov/universe/black-holes/" },
+  { id: "bh-gaia3", kind: "blackhole", name: "Gaia BH3", distance: "1.926 A.L.", detail: "Buco nero stellare di circa 33 masse solari nella costellazione dell'Aquila, tra i più massicci noti nella Via Lattea.", source: "https://www.esa.int/ESA_Multimedia/Images/2024/04/Gaia_black_holes" },
+];
+
+const probes = [
+  { id: "probe-voyager1", name: "Voyager 1", distance: "spazio interstellare", status: "Attiva · oltre l'eliosfera", launched: "5 settembre 1977", history: "Ha sorvolato Giove e Saturno, poi il 25 agosto 2012 è diventata la prima sonda a entrare nello spazio interstellare. Porta il Voyager Golden Record.", construction: "Sonda NASA/JPL stabilizzata su tre assi, con antenna ad alto guadagno, generatore termoelettrico a radioisotopi e strumenti per campi e particelle.", engineer: "John Casani — project manager della missione Voyager; ingegnere di sistema JPL.", image: "https://science.nasa.gov/wp-content/uploads/2024/04/spacecraft-profile.jpg", source: "https://science.nasa.gov/mission/voyager/voyager-1/" },
+  { id: "probe-voyager2", name: "Voyager 2", distance: "spazio interstellare", status: "Attiva · oltre l'eliosfera", launched: "20 agosto 1977", history: "Unica sonda ad aver visitato da vicino Urano e Nettuno; ha esplorato anche Giove e Saturno prima di attraversare l'eliopausa nel 2018.", construction: "Gemella di Voyager 1, progettata per operare per decenni grazie a sistemi ridondanti e alimentazione RTG.", engineer: "John Casani — project manager della missione Voyager; ingegnere di sistema JPL.", image: "https://science.nasa.gov/wp-content/uploads/2024/04/spacecraft-profile.jpg", source: "https://science.nasa.gov/mission/voyager/voyager-2/" },
+  { id: "probe-newhorizons", name: "New Horizons", distance: "fascia di Kuiper", status: "Attiva · crociera esterna", launched: "19 gennaio 2006", history: "Prima missione a esplorare Plutone (2015) e l'oggetto della fascia di Kuiper Arrokoth (2019); nel 2026 ha ripreso le operazioni dopo l'ibernazione.", construction: "Realizzata dal Johns Hopkins Applied Physics Laboratory con strumenti compatti, generatore RTG e antenne per comunicazioni a lunga distanza.", engineer: "Glen Fountain — project manager; Alice Bowman — mission operations manager.", image: "https://photojournal.jpl.nasa.gov/jpeg/PIA19707.jpg", source: "https://science.nasa.gov/missions/new-horizons/nasas-new-horizons-spacecraft-wakes-from-hibernation-in-good-health/" },
+  { id: "probe-pioneer10", name: "Pioneer 10", distance: "oltre Nettuno", status: "Storica · nessun contatto dal 2003", launched: "2 marzo 1972", history: "Prima sonda a sorvolare Giove e ad attraversare la fascia principale degli asteroidi; la sua ultima debole trasmissione fu ricevuta nel 2003.", construction: "Progetto NASA Ames con struttura esagonale, strumenti scientifici e generatori nucleari SNAP-19; portava la celebre placca Pioneer.", engineer: "Charles F. Hall — project manager del programma Pioneer 10/11 presso NASA Ames.", image: "https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/09/p/pioneer10_art-3.jpg?crop=faces%2Cfocalpoint&fit=crop&h=600&w=900", source: "https://science.nasa.gov/mission/pioneer-10/" },
+  { id: "probe-pioneer11", name: "Pioneer 11", distance: "oltre il Sistema Solare", status: "Storica · ultimo contatto 1995", launched: "6 aprile 1973", history: "Dopo Giove compì il primo sorvolo ravvicinato di Saturno nel 1979, aprendo la strada alle missioni successive.", construction: "Sonda gemella del progetto Pioneer, progettata per affrontare radiazione e navigazione autonoma nello spazio profondo.", engineer: "Charles F. Hall — project manager del programma Pioneer 10/11 presso NASA Ames.", image: null, source: "https://science.nasa.gov/mission/pioneer-11/" },
+  { id: "probe-cassini", name: "Cassini-Huygens", distance: "missione conclusa a Saturno", status: "Storica · conclusa nel 2017", launched: "15 ottobre 1997", history: "Ha studiato Saturno per tredici anni in orbita; il lander europeo Huygens è atterrato su Titano nel 2005. Cassini è stata guidata nell'atmosfera di Saturno nel 2017.", construction: "Collaborazione NASA-ESA-ASI: orbiter NASA/JPL, lander Huygens ESA e antenna ad alto guadagno fornita dall'Italia.", engineer: "John Casani — project manager Cassini prima del lancio; Enrico Flamini — responsabile ASI per antenna e contributi italiani.", image: "https://photojournal.jpl.nasa.gov/jpeg/PIA21895.jpg", source: "https://science.nasa.gov/mission/cassini/" },
+  { id: "probe-parker", name: "Parker Solar Probe", distance: "orbita solare", status: "Attiva · studio della corona", launched: "12 agosto 2018", history: "Prima sonda a volare attraverso la corona solare. Le orbite ravvicinate misurano vento solare, campi magnetici e particelle energetiche.", construction: "Progettata e costruita dal Johns Hopkins Applied Physics Laboratory; lo scudo termico in carbonio protegge gli strumenti dalle temperature estreme.", engineer: "Andrew Driesman — project manager della missione presso APL.", image: "https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/09/p/a/parkerlaunch.jpg?crop=faces%2Cfocalpoint&fit=crop&h=600&w=900", source: "https://science.nasa.gov/3d-resources/parker-solar-probe/" },
+  { id: "probe-perseverance", name: "Perseverance", distance: "Marte · sistema solare", status: "Attiva · esplorazione di Marte", launched: "30 luglio 2020", history: "Rover nel cratere Jezero: cerca tracce di antichi ambienti abitabili e raccoglie campioni per una futura campagna di ritorno.", construction: "Costruito e gestito dal Jet Propulsion Laboratory, con sistema di campionamento, fotocamere scientifiche e l'elicottero dimostrativo Ingenuity.", engineer: "Jennifer Trosper — ingegnera e project manager della missione Mars 2020.", image: "https://assets.science.nasa.gov/dynamicimage/assets/science/psd/mars/downloadable_items/4/4/44767_PIA23828-MAINimage-RoverNamePlates-KSC-20200407-PH-JPL01_0006.jpg?crop=faces%2Cfocalpoint&fit=clip&h=600&w=900", source: "https://science.nasa.gov/mission/mars-2020-perseverance/" },
+];
+
 const els = {
   name: document.getElementById("systemName"),
   description: document.getElementById("systemDescription"),
@@ -886,14 +911,15 @@ let warpTimer = 0,
   warpEndTimer = 0;
 
 function renderSystemNodes() {
-  const ids = Object.keys(systems),
+  const systemIds = Object.keys(systems),
+    ids = [...systemIds, ...mapObjects.map((item) => item.id), ...probes.map((item) => item.id)],
     map = document.querySelector(".map-panel"),
     width = map.clientWidth,
     height = map.clientHeight;
   const positions = createOrganicPositions(ids, width, height);
   const container = document.getElementById("systemNodes");
   container.innerHTML = "";
-  ids.forEach((id, index) => {
+  systemIds.forEach((id, index) => {
     const data = systems[id],
       node = document.createElement("div"),
       point = positions[index];
@@ -915,11 +941,43 @@ function renderSystemNodes() {
       .addEventListener("click", () => navigateToSystem(id));
     container.appendChild(node);
   });
+  [...mapObjects, ...probes].forEach((item, index) => {
+    const point = positions[systemIds.length + index];
+    const node = document.createElement("div");
+    const isProbe = item.id.startsWith("probe-");
+    node.className = `system-node map-object-node ${isProbe ? "probe" : "black-hole"}`;
+    node.dataset.mapObject = item.id;
+    node.style.setProperty("--x", `${point.x}%`);
+    node.style.setProperty("--y", `${point.y}%`);
+    node.innerHTML = `<button class="object-marker ${isProbe ? "probe-marker" : "blackhole-marker"}" type="button" aria-label="Apri ${item.name}" title="${item.name} · ${item.distance}">${isProbe ? "↗" : "●"}</button><span class="node-caption"><b>${item.name}</b><small>${item.distance}</small></span>`;
+    node.querySelector("button").addEventListener("click", () => isProbe ? openProbe(item.id) : openBlackHole(item.id));
+    container.appendChild(node);
+  });
   const index = document.getElementById("mapIndex");
-  if (index) index.textContent = `01 — ${String(ids.length).padStart(2, "0")}`;
+  if (index) index.textContent = `${systemIds.length} SISTEMI · ${mapObjects.length + probes.length} OGGETTI`;
   drawConstellations(positions, width, height);
   if (activeMapFilter) applyMapFilterClasses();
 }
+
+function openBlackHole(id) {
+  const object = mapObjects.find((item) => item.id === id);
+  if (!object) return;
+  showMissionCard({ title: object.name, eyebrow: `BUCO NERO · ${object.distance}`, history: object.detail, construction: "Oggetto astrofisico osservato indirettamente attraverso gli effetti gravitazionali, la radiazione della materia circostante o il moto di stelle compagne.", engineer: "Ricerca collaborativa: missione Gaia dell'Agenzia Spaziale Europea e osservatori astronomici terrestri.", source: object.source });
+}
+
+function openProbe(id) {
+  const probe = probes.find((item) => item.id === id);
+  if (probe) showMissionCard({ ...probe, title: probe.name, eyebrow: `SONDA · ${probe.status}` });
+}
+
+function showMissionCard(item) {
+  const content = document.getElementById("missionContent");
+  content.innerHTML = `${item.image ? `<img class="mission-image" src="${item.image}" alt="${item.title}" onerror="this.hidden=true">` : `<div class="mission-image mission-placeholder" aria-hidden="true">✦</div>`}<div class="mission-body"><span class="mission-eyebrow">${item.eyebrow}</span><h2 id="missionTitle">${item.title}</h2>${item.launched ? `<p class="mission-date">Lancio · ${item.launched}</p>` : ""}<h3>Diario della missione</h3><p>${item.history}</p><h3>Progettazione e costruzione</h3><p>${item.construction}</p><h3>Figure di riferimento</h3><p>${item.engineer}</p><a class="mission-source" href="${item.source}" target="_blank" rel="noopener noreferrer">Fonte NASA / ESA ↗</a><p class="mission-credit">Immagini e dati: archivi NASA / JPL / ESA</p></div>`;
+  const dialog = document.getElementById("missionDialog");
+  if (!dialog.open) dialog.showModal();
+}
+document.getElementById("missionClose").addEventListener("click", () => document.getElementById("missionDialog").close());
+document.getElementById("missionDialog").addEventListener("click", (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });
 
 function navigateToSystem(id) {
   if (id === activeSystem) {
@@ -937,7 +995,7 @@ function navigateToSystem(id) {
 
 function createOrganicPositions(ids, width, height) {
   const mobile = window.matchMedia("(max-width: 760px)").matches,
-    minDistance = mobile ? 65 : Math.max(82, Math.min(118, width * 0.12));
+    minDistance = mobile ? 39 : Math.max(50, Math.min(69, width * 0.07));
   let seed = 20261110;
   for (const id of ids)
     for (const char of id) seed = (seed * 31 + char.charCodeAt(0)) >>> 0;
@@ -954,7 +1012,7 @@ function createOrganicPositions(ids, width, height) {
     let best = null,
       bestGap = -1;
     for (let attempt = 0; attempt < 900; attempt++) {
-      const candidate = { id, x: 7 + random() * 86, y: 35 + random() * 49 };
+      const candidate = { id, x: 6 + random() * 88, y: 34 + random() * 52 };
       let gap = Infinity;
       for (const other of placed) {
         const dx = ((candidate.x - other.x) * width) / 100,
@@ -1006,7 +1064,7 @@ function drawConstellations(points, width, height) {
 
 function applyMapFilterClasses() {
   document.querySelectorAll(".system-node").forEach((node) => {
-    const matches = activeMapFilter?.matches.has(node.dataset.system);
+    const matches = activeMapFilter?.matches.has(node.dataset.system || node.dataset.mapObject);
     node.classList.toggle("filter-match", Boolean(matches));
     node.classList.toggle("filtered-out", Boolean(activeMapFilter && !matches));
   });
@@ -1068,13 +1126,22 @@ function setMapPlanetFilter(kind) {
   }
   const matches = new Set();
   let planetCount = 0;
-  for (const [id, system] of Object.entries(systems)) {
-    const count = system.planets.filter((planet) =>
-      planetMatchesMapFilter(planet, kind),
-    ).length;
-    if (count) {
-      matches.add(id);
-      planetCount += count;
+  if (kind === "blackhole") {
+    mapObjects.forEach((item) => matches.add(item.id));
+    planetCount = mapObjects.length;
+  } else if (kind === "probe" || kind === "historic-probe") {
+    probes.filter((item) => kind === "probe" || item.status.includes("Storica"))
+      .forEach((item) => matches.add(item.id));
+    planetCount = matches.size;
+  } else {
+    for (const [id, system] of Object.entries(systems)) {
+      const count = system.planets.filter((planet) =>
+        planetMatchesMapFilter(planet, kind),
+      ).length;
+      if (count) {
+        matches.add(id);
+        planetCount += count;
+      }
     }
   }
   activeMapFilter = { matches, kind, maxDistance: Infinity };
@@ -1087,9 +1154,12 @@ function setMapPlanetFilter(kind) {
     methane: "mondi con metano nei dati catalogati",
     water: "mondi con acqua o ammoniaca nei dati catalogati",
     metal: "mondi con silicati o metalli indicati nei dati",
+    blackhole: "buchi neri conosciuti (posizioni schematiche)",
+    probe: "sonde spaziali attive e storiche",
+    "historic-probe": "sonde storiche con missione conclusa o segnale cessato",
   };
   document.getElementById("mapFilterText").textContent =
-    `${matches.size} sistemi · ${planetCount} pianeti compatibili · ${labels[kind]}`;
+    `${matches.size} oggetti evidenziati · ${planetCount} corpi compatibili · ${labels[kind]}`;
   document.getElementById("mapFilterNotice").hidden = false;
 }
 document.querySelectorAll("[data-planet-filter]").forEach((button) => {

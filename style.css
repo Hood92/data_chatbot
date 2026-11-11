@@ -509,8 +509,11 @@ body {
   padding: 22px 25px 0;
   display: flex;
   flex-direction: column;
+  align-self: stretch;
   min-width: 0;
-  max-height: calc(100vh - 127px);
+  min-height: 0;
+  max-height: none;
+  height: auto;
   overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: #264452 transparent;
@@ -1295,7 +1298,7 @@ body {
   letter-spacing: 0.7px;
 }
 .planet-detail {
-  flex: none;
+  flex: 1 0 auto;
 }
 .dashboard {
   min-height: 980px;

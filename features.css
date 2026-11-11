@@ -28,7 +28,7 @@
   z-index: 6;
   top: 36px;
   right: 28px;
-  max-width: 56%;
+  max-width: 68%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -90,6 +90,76 @@
 .planet-card.filter-planet-match .planet-orb {
   box-shadow: 0 0 0 4px rgba(184, 249, 58, .1), 0 0 16px 5px rgba(184, 249, 58, .35);
 }
+.map-object-node { z-index: 4; }
+.object-marker {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #fff;
+  font: 18px/1 var(--mono);
+  background: rgba(5, 20, 31, .92);
+  transition: transform .2s, box-shadow .2s;
+}
+.object-marker:hover, .map-object-node.filter-match .object-marker {
+  transform: scale(1.28);
+  box-shadow: 0 0 18px currentColor;
+}
+.blackhole-marker {
+  border: 1px solid #d3a8ff;
+  color: #d3a8ff;
+  box-shadow: 0 0 12px rgba(190, 127, 255, .62), inset 0 0 8px rgba(190, 127, 255, .35);
+}
+.probe-marker {
+  border: 1px solid #71d9ed;
+  color: #71d9ed;
+  box-shadow: 0 0 10px rgba(113, 217, 237, .48);
+}
+.map-object-node .node-caption { margin-top: 4px; }
+.map-object-node .node-caption b { font-size: 7px; letter-spacing: .25px; }
+.map-object-node .node-caption small { font-size: 7px; }
+.mission-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(620px, calc(100% - 28px));
+  height: fit-content;
+  max-height: min(84vh, 820px);
+  padding: 0;
+  overflow: auto;
+  border: 1px solid rgba(184, 249, 58, .32);
+  border-radius: 12px;
+  color: #d4e5e6;
+  background: #071a27;
+  box-shadow: 0 24px 90px rgba(0, 0, 0, .65);
+}
+.mission-dialog::backdrop { background: rgba(1, 8, 15, .78); backdrop-filter: blur(5px); }
+.mission-close {
+  position: sticky;
+  z-index: 2;
+  top: 12px;
+  float: right;
+  width: 34px;
+  height: 34px;
+  margin: 10px 10px -44px 0;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 50%;
+  color: var(--lime);
+  background: rgba(5,20,31,.9);
+  font-size: 22px;
+  cursor: pointer;
+}
+.mission-image { display: block; width: 100%; height: 230px; object-fit: cover; background: radial-gradient(circle, #183749, #061523 72%); }
+.mission-placeholder { display: grid; place-items: center; color: #b8f93a; font-size: 56px; }
+.mission-body { padding: 24px 28px 28px; }
+.mission-eyebrow, .mission-date { color: #9fb5b9; font: 9px var(--mono); letter-spacing: .7px; text-transform: uppercase; }
+.mission-body h2 { margin: 8px 0 4px; color: var(--lime); font: 500 28px var(--font); }
+.mission-body h3 { margin: 20px 0 6px; color: #8ce2ea; font: 9px var(--mono); letter-spacing: .8px; text-transform: uppercase; }
+.mission-body p { margin: 0; color: #c0d0d1; font-size: 13px; line-height: 1.65; }
+.mission-source { display: inline-block; margin-top: 22px; color: var(--lime); font: 10px var(--mono); }
+.mission-body .mission-credit { margin-top: 10px; color: #69858d; font: 8px var(--mono); }
 .map-panel.warp:after {
   content: "";
   position: absolute;

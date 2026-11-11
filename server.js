@@ -9,7 +9,7 @@ const PORT = Number(process.env.PORT || 3000);
 
 // Modello principale e modello di backup configurabili da .env
 const PRIMARY_MODEL =
-  process.env.OPENROUTER_MODEL || "meta-llama/llama-3-8b-instruct:free";
+  process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct";
 const FALLBACK_MODEL =
   process.env.OPENROUTER_FALLBACK_MODEL || "openrouter/free";
 
@@ -149,7 +149,9 @@ app.post("/api/assistant", async (req, res) => {
     console.log(
       `Invio richiesta a OpenRouter con il modello principale: ${PRIMARY_MODEL}`,
     );
-    let response, payload, modelUsed = PRIMARY_MODEL;
+    let response,
+      payload,
+      modelUsed = PRIMARY_MODEL;
     try {
       ({ response, payload } = await callOpenRouter(PRIMARY_MODEL));
     } catch (primaryError) {
@@ -231,7 +233,9 @@ app.post("/api/assistant", async (req, res) => {
     if (!text)
       return res
         .status(502)
-        .json({ error: `Né ${PRIMARY_MODEL} né ${FALLBACK_MODEL} hanno restituito una risposta testuale.` });
+        .json({
+          error: `Né ${PRIMARY_MODEL} né ${FALLBACK_MODEL} hanno restituito una risposta testuale.`,
+        });
 
     // Restituisce il testo generato e il modello effettivo utilizzato
     return res.json({ text, model: payload.model || modelUsed });

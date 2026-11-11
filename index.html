@@ -65,19 +65,21 @@
             <div>
               <div class="eyebrow">
                 <span class="eyebrow-line"></span> MAPPATURA INTERSTELLARE
-                <span class="eyebrow-index" id="mapIndex">01 — 26</span>
+                <span class="eyebrow-index" id="mapIndex"
+                  >26 SISTEMI · 13 OGGETTI</span
+                >
               </div>
               <h1>Il vicinato<br /><span>stellare.</span></h1>
               <p class="map-intro">
-                26 sistemi vicini. Mondi da scoprire.<br />Il prossimo salto è
-                tuo.
+                Sistemi, buchi neri e sonde tra i vicini galattici.<br />Il
+                prossimo salto è tuo.
               </p>
             </div>
             <div class="distance-chip">
               <span class="distance-icon">✳</span
               ><span
-                ><small>RAGGIO MAPPATO</small
-                ><strong>15 <em>anni luce</em></strong></span
+                ><small>ATLANTE ESTESO</small
+                ><strong>Vicino <em>e profondo</em></strong></span
               >
             </div>
           </div>
@@ -87,15 +89,32 @@
             preserveAspectRatio="none"
             aria-hidden="true"
           ></svg>
-          <div class="map-class-filters" role="group" aria-label="Filtra i sistemi per composizione planetaria">
-            <span>COMPOSIZIONE</span>
+          <div
+            class="map-class-filters"
+            role="group"
+            aria-label="Filtra sistemi, pianeti, buchi neri e sonde"
+          >
+            <span>FILTRI ATLANTE</span>
             <button type="button" data-planet-filter="rocky">Rocciosi</button>
             <button type="button" data-planet-filter="gas">Gassosi</button>
-            <button type="button" data-planet-filter="hydrogen">Idrogeno</button>
+            <button type="button" data-planet-filter="hydrogen">
+              Idrogeno
+            </button>
             <button type="button" data-planet-filter="ice">Ghiacciati</button>
             <button type="button" data-planet-filter="methane">Metano</button>
-            <button type="button" data-planet-filter="water">Acqua / ammoniaca</button>
-            <button type="button" data-planet-filter="metal">Silicati / metalli</button>
+            <button type="button" data-planet-filter="water">
+              Acqua / ammoniaca
+            </button>
+            <button type="button" data-planet-filter="metal">
+              Silicati / metalli
+            </button>
+            <button type="button" data-planet-filter="blackhole">
+              Buchi neri
+            </button>
+            <button type="button" data-planet-filter="probe">Sonde</button>
+            <button type="button" data-planet-filter="historic-probe">
+              Sonde storiche
+            </button>
             <button type="button" id="resetPlanetFilters">Reset</button>
           </div>
           <div class="route-line" aria-hidden="true">
@@ -155,8 +174,7 @@
           aria-label="Dettagli del sistema selezionato"
         >
           <div class="panel-topline">
-            <span><i class="live-dot"></i> ARCHIVIO ESPLORATIVO</span
-            ><button class="panel-menu" aria-label="Menu">•••</button>
+            <span><i class="live-dot"></i> ARCHIVIO ESPLORATIVO</span>
           </div>
           <div class="system-summary">
             <div class="system-overline">
@@ -177,15 +195,15 @@
                 ><strong id="systemStar">G2V <em>gialla</em></strong>
               </div>
               <div>
-                <small>PIANETI</small
-                ><strong id="systemPlanetCount">08 <em>catalogati</em></strong>
+                <small>CORPI</small
+                ><strong id="systemPlanetCount">13 <em>catalogati</em></strong>
               </div>
             </div>
           </div>
           <div class="planet-section">
             <div class="section-heading">
               <span>ATLANTE DEI PIANETI</span
-              ><span id="planetCountLabel">08 CORPI</span>
+              ><span id="planetCountLabel">13 CORPI</span>
             </div>
             <div class="planet-list" id="planetList"></div>
           </div>
@@ -245,16 +263,25 @@
       <div class="data-chat-context" id="chatContext">
         CONTESTO: SISTEMA SOLARE
       </div>
-      <div class="data-chat-messages" id="chatMessages" role="log" aria-live="polite">
+      <div
+        class="data-chat-messages"
+        id="chatMessages"
+        role="log"
+        aria-live="polite"
+      >
         <div class="chat-message bot-message">
           <span class="message-avatar"><img src="data.jpg" alt="" /></span>
           <div class="message-bubble">
             <span class="message-sender">DATA</span>
-            <p>Salve. Sono il Tenente Comandante Data. Posso assisterla con quesiti di astronomia, esplorazione spaziale e scenari di fanta-astronomia.</p>
+            <p>
+              Salve. Sono il Tenente Comandante Data. Posso assisterla con
+              quesiti di astronomia, esplorazione spaziale e scenari di
+              fanta-astronomia.
+            </p>
           </div>
         </div>
       </div>
-<form class="data-chat-form" id="dataChatForm">
+      <form class="data-chat-form" id="dataChatForm">
         <input
           id="chatInput"
           type="text"
@@ -271,6 +298,21 @@
         DATA ASTRONOMICI A SCOPO DIVULGATIVO · LE STIME SONO INDICATE COME TALI
       </div>
     </section>
+    <dialog
+      class="mission-dialog"
+      id="missionDialog"
+      aria-labelledby="missionTitle"
+    >
+      <button
+        class="mission-close"
+        id="missionClose"
+        type="button"
+        aria-label="Chiudi"
+      >
+        ×
+      </button>
+      <div id="missionContent" class="missionBubble"></div>
+    </dialog>
     <script src="main.js"></script>
   </body>
 </html>
