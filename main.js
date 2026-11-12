@@ -1596,6 +1596,21 @@ function setZoom(next) {
   zoomLabel.textContent = `${zoom.toFixed(1)}×`;
   window.setTimeout(() => positionShip(activeSystem), 260);
 }
+map.addEventListener("wheel", (event) => {
+  if (detailsPanelOpen || event.target.closest(".map-controls, .map-class-filters, .map-filter-notice")) return;
+  event.preventDefault();
+  const rect = map.getBoundingClientRect();
+  const focusX = event.clientX - rect.left;
+  const focusY = event.clientY - rect.top;
+  const originX = map.clientWidth * 0.51, originY = map.clientHeight * 0.62;
+  const worldX = originX + (focusX - originX - panX) / zoom;
+  const worldY = originY + (focusY - originY - panY) / zoom;
+  zoom = Math.max(0.8, Math.min(3.5, zoom * Math.exp(-event.deltaY * 0.0012)));
+  panX = focusX - originX - (worldX - originX) * zoom;
+  panY = focusY - originY - (worldY - originY) * zoom;
+  applyMapView();
+  zoomLabel.textContent = `${zoom.toFixed(1)}Ã—`;
+}, { passive: false });
 map.addEventListener("pointerdown", (event) => {
   if (detailsPanelOpen) return;
   if (event.button !== 0 || event.target.closest(".map-controls, .map-class-filters, .map-heading, .map-filter-notice, .map-footnote")) return;
