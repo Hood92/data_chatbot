@@ -907,6 +907,37 @@ const els = {
 let activeSystem = "sol";
 let activePlanet = null;
 let activeMapFilter = null;
+const detailsPanel = document.querySelector(".explorer-panel");
+const detailsBackdrop = document.getElementById("detailsBackdrop");
+let detailsPanelOpen = false;
+let savedBodyOverflow = "";
+if (window.matchMedia("(max-width: 768px)").matches) {
+  detailsPanel.setAttribute("aria-hidden", "true");
+}
+function openDetailsPanel() {
+  if (!window.matchMedia("(max-width: 768px)").matches || detailsPanelOpen) return;
+  detailsPanelOpen = true;
+  savedBodyOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+  detailsBackdrop.hidden = false;
+  detailsPanel.setAttribute("aria-hidden", "false");
+  detailsPanel.setAttribute("aria-modal", "true");
+  detailsPanel.classList.add("open");
+  document.querySelector(".map-panel").classList.add("details-open");
+  document.getElementById("closeDetailsPanel").focus();
+}
+function closeDetailsPanel() {
+  if (!detailsPanelOpen) return;
+  detailsPanelOpen = false;
+  document.body.style.overflow = savedBodyOverflow;
+  detailsPanel.classList.remove("open");
+  detailsPanel.setAttribute("aria-hidden", "true");
+  detailsPanel.removeAttribute("aria-modal");
+  detailsBackdrop.hidden = true;
+  document.querySelector(".map-panel").classList.remove("details-open");
+}
+document.getElementById("closeDetailsPanel").addEventListener("click", closeDetailsPanel);
+detailsBackdrop.addEventListener("click", closeDetailsPanel);
 let warpTimer = 0,
   warpEndTimer = 0;
 
@@ -998,6 +1029,7 @@ function selectPlanetByName(name) {
   if (button && planet) showPlanet(planet, button);
 }
 function navigateToSystem(id, planetName = null) {
+  openDetailsPanel();
   if (id === activeSystem) {
     clearTimeout(warpTimer);
     clearTimeout(warpEndTimer);
@@ -1174,6 +1206,9 @@ function setMapPlanetFilter(kind) {
   }
   activeMapFilter = { matches, kind, maxDistance: Infinity };
   applyMapFilterClasses();
+  panX = 0;
+  panY = 0;
+  setZoom(1);
   const labels = {
     rocky: "pianeti rocciosi",
     gas: "giganti gassosi",
@@ -1478,7 +1513,10 @@ function renderSystem(id) {
       button.dataset.planet = planet.name;
       button.setAttribute("aria-label", `Apri la scheda di ${planet.name}`);
       button.innerHTML = `<span class="planet-orb" style="--planet-color:${planet.color}"></span><span class="planet-card-name">${planet.name}</span>`;
-      button.addEventListener("click", () => showPlanet(planet, button));
+      button.addEventListener("click", () => {
+        showPlanet(planet, button);
+        openDetailsPanel();
+      });
       els.list.appendChild(button);
       if (index === 0) showPlanet(planet, button);
     });
@@ -1530,6 +1568,8 @@ const zoomLabel = document.querySelector(".map-controls span");
 const map = document.querySelector(".map-panel");
 const mapLayers = [document.querySelector(".system-nodes"), document.querySelector(".constellation-lines")];
 let panX = 0, panY = 0, pointerStart = null, draggedMap = false;
+const touchPoints = new Map();
+let pinchStart = null;
 function updateMapFocus(systemId = activeSystem) {
   const node = document.querySelector(`.system-node[data-system="${systemId}"]`);
   if (!node) return;
@@ -1557,11 +1597,53 @@ function setZoom(next) {
   window.setTimeout(() => positionShip(activeSystem), 260);
 }
 map.addEventListener("pointerdown", (event) => {
+  if (detailsPanelOpen) return;
   if (event.button !== 0 || event.target.closest(".map-controls, .map-class-filters, .map-heading, .map-filter-notice, .map-footnote")) return;
+  if (event.pointerType === "touch") {
+    touchPoints.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (touchPoints.size === 2) {
+      const points = [...touchPoints.values()];
+      const rect = map.getBoundingClientRect();
+      const distance = Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y);
+      pinchStart = {
+        distance: Math.max(distance, 1),
+        zoom,
+        panX,
+        panY,
+        centerX: (points[0].x + points[1].x) / 2 - rect.left,
+        centerY: (points[0].y + points[1].y) / 2 - rect.top,
+      };
+      pointerStart = null;
+      draggedMap = true;
+      map.classList.add("dragging");
+      event.preventDefault();
+      return;
+    }
+  }
   pointerStart = { id: event.pointerId, x: event.clientX, y: event.clientY, panX, panY };
   draggedMap = false;
 });
 window.addEventListener("pointermove", (event) => {
+  if (event.pointerType === "touch" && touchPoints.has(event.pointerId)) {
+    touchPoints.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pinchStart && touchPoints.size >= 2) {
+      const points = [...touchPoints.values()];
+      const rect = map.getBoundingClientRect();
+      const distance = Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y);
+      const centerX = (points[0].x + points[1].x) / 2 - rect.left;
+      const centerY = (points[0].y + points[1].y) / 2 - rect.top;
+      const originX = map.clientWidth * 0.51, originY = map.clientHeight * 0.62;
+      zoom = Math.max(0.8, Math.min(3.5, pinchStart.zoom * distance / pinchStart.distance));
+      const worldX = originX + (pinchStart.centerX - originX - pinchStart.panX) / pinchStart.zoom;
+      const worldY = originY + (pinchStart.centerY - originY - pinchStart.panY) / pinchStart.zoom;
+      panX = centerX - originX - (worldX - originX) * zoom;
+      panY = centerY - originY - (worldY - originY) * zoom;
+      applyMapView();
+      zoomLabel.textContent = `${zoom.toFixed(1)}Ã—`;
+      event.preventDefault();
+      return;
+    }
+  }
   if (!pointerStart || pointerStart.id !== event.pointerId) return;
   const dx = event.clientX - pointerStart.x, dy = event.clientY - pointerStart.y;
   if (!draggedMap && Math.hypot(dx, dy) < 4) return;
@@ -1575,10 +1657,22 @@ window.addEventListener("pointermove", (event) => {
   applyMapView();
 });
 function finishMapDrag(event) {
-  if (!pointerStart || pointerStart.id !== event.pointerId) return;
-  if (map.hasPointerCapture(event.pointerId)) map.releasePointerCapture(event.pointerId);
-  map.classList.remove("dragging");
-  pointerStart = null;
+  if (touchPoints.has(event.pointerId)) {
+    touchPoints.delete(event.pointerId);
+    if (pinchStart) {
+      pinchStart = null;
+      if (touchPoints.size === 1) {
+        const [id, point] = [...touchPoints.entries()][0];
+        pointerStart = { id, x: point.x, y: point.y, panX, panY };
+        return;
+      }
+    }
+  }
+  if (pointerStart?.id === event.pointerId) {
+    if (map.hasPointerCapture(event.pointerId)) map.releasePointerCapture(event.pointerId);
+    pointerStart = null;
+  }
+  if (!pointerStart && !pinchStart) map.classList.remove("dragging");
 }
 window.addEventListener("pointerup", finishMapDrag);
 window.addEventListener("pointercancel", finishMapDrag);
@@ -1601,6 +1695,13 @@ document.getElementById("resetMap").addEventListener("click", () => {
   renderSystem("sol");
 });
 window.addEventListener("resize", () => {
+  if (window.matchMedia("(max-width: 768px)").matches) {
+    if (!detailsPanelOpen) detailsPanel.setAttribute("aria-hidden", "true");
+  } else {
+    closeDetailsPanel();
+    detailsPanel.removeAttribute("aria-hidden");
+    detailsPanel.removeAttribute("aria-modal");
+  }
   renderSystemNodes();
   renderSystem(activeSystem);
   centerSystemOnMap(activeSystem);
@@ -1614,6 +1715,10 @@ filterToggle.addEventListener("click", () => {
   filterToggle.setAttribute("aria-expanded", String(isOpen));
 });
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && detailsPanelOpen) {
+    closeDetailsPanel();
+    return;
+  }
   if (event.key === "Escape" && filterMenu.classList.contains("open")) {
     filterMenu.classList.remove("open");
     filterToggle.setAttribute("aria-expanded", "false");
