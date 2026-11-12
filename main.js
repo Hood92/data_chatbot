@@ -918,7 +918,7 @@ function renderSystemNodes() {
     height = map.clientHeight;
   const positions = createOrganicPositions(ids, width, height);
   const container = document.getElementById("systemNodes");
-  container.innerHTML = "";
+  container.querySelectorAll(".system-node").forEach((node) => node.remove());
   systemIds.forEach((id, index) => {
     const data = systems[id],
       node = document.createElement("div"),
@@ -979,18 +979,46 @@ function showMissionCard(item) {
 document.getElementById("missionClose").addEventListener("click", () => document.getElementById("missionDialog").close());
 document.getElementById("missionDialog").addEventListener("click", (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });
 
-function navigateToSystem(id) {
+function centerSystemOnMap(id) {
+  const node = document.querySelector(`.system-node[data-system="${id}"]`);
+  if (!node) return;
+  const width = map.clientWidth, height = map.clientHeight;
+  const originX = width * 0.51, originY = height * 0.62;
+  const x = parseFloat(node.style.getPropertyValue("--x")) * width / 100;
+  const y = parseFloat(node.style.getPropertyValue("--y")) * height / 100;
+  panX = width / 2 - (originX + (x - originX) * zoom);
+  panY = height / 2 - (originY + (y - originY) * zoom);
+  applyMapView(id);
+}
+function selectPlanetByName(name) {
+  if (!name) return;
+  const button = [...els.list.querySelectorAll(".planet-card")]
+    .find((card) => card.dataset.planet === name);
+  const planet = systems[activeSystem]?.planets.find((item) => item.name === name);
+  if (button && planet) showPlanet(planet, button);
+}
+function navigateToSystem(id, planetName = null) {
   if (id === activeSystem) {
+    clearTimeout(warpTimer);
+    clearTimeout(warpEndTimer);
+    map.classList.remove("warp", "travelling");
+    centerSystemOnMap(id);
     renderSystem(id);
+    selectPlanetByName(planetName);
     return;
   }
   map.classList.remove("warp");
+  map.classList.remove("travelling");
   void map.offsetWidth;
-  map.classList.add("warp");
   clearTimeout(warpTimer);
   clearTimeout(warpEndTimer);
-  warpTimer = window.setTimeout(() => renderSystem(id), 360);
-  warpEndTimer = window.setTimeout(() => map.classList.remove("warp"), 1050);
+  map.classList.add("travelling", "warp");
+  centerSystemOnMap(id);
+  warpTimer = window.setTimeout(() => {
+    renderSystem(id);
+    selectPlanetByName(planetName);
+  }, 360);
+  warpEndTimer = window.setTimeout(() => map.classList.remove("warp", "travelling"), 1150);
 }
 
 function createOrganicPositions(ids, width, height) {
@@ -1193,7 +1221,50 @@ function showPlanet(planet, button) {
   els.detail.innerHTML = `<article class="detail-content"><div class="detail-title"><span class="planet-orb" style="--planet-color:${planet.color}"></span><div><h3>${planet.name}</h3><small>${profile.class.toLocaleUpperCase("it-IT")} · ${planet.type.toLocaleUpperCase("it-IT")}</small></div></div><div class="planet-viewer"><span class="viewer-label">MODELLO 3D SCHEMATICO · ${profile.class.toLocaleUpperCase("it-IT")}</span><canvas class="planet-canvas" id="planetCanvas" aria-label="Modello 3D interattivo schematico di ${planet.name}"></canvas><span class="viewer-hint">TRASCINA PER RUOTARE · ROTELLA PER ZOOM</span></div><p class="detail-copy">${planet.description}</p><div class="detail-metrics"><div><small>DIAMETRO / MASSA</small><strong>${planet.diameter}</strong></div><div><small>ANNO / DISTANZA STELLA</small><strong>${planet.year} · ${planet.distance}</strong></div><div><small>DISTANZA DALLA TERRA</small><strong>${earthDistance}</strong></div><div><small>COMPOSIZIONE</small><strong>${profile.composition}</strong></div><div><small>ATMOSFERA</small><strong>${profile.atmosphere}</strong></div><div><small>TEMPERATURA</small><strong>${profile.temperature}</strong></div><div><small>GRAVITÀ / LUNE</small><strong>${profile.gravity} · ${profile.moons}</strong></div></div><p class="detail-habitability"><b>ABITABILITÀ</b> ${profile.habitability}</p>${renderMissionTimeline(planet)}</article>`;
   initPlanetViewer(document.getElementById("planetCanvas"), planet);
   updateChatContext();
+  updateSimilarPlanetOptions(planet);
 }
+
+const similarPlanetSelect = document.getElementById("similarPlanetSelect");
+let similarPlanetDestinations = [];
+function getPlanetSimilarityClass(planet) {
+  const profile = planetProfiles[planet.name] || {};
+  const traits = normalizeItalian(`${profile.class || ""} ${profile.composition || ""} ${planet.type || ""}`);
+  if (/gigante ghiacciato|mondo ghiacciato|planet[a]? nano.*ghiacciat|ghiacciato/.test(traits)) return "Mondi ghiacciati";
+  if (/gigante gassoso|candidato gigante|gassoso|idrogeno ed elio/.test(traits)) return "Giganti gassosi";
+  if (/roccios|terrestr|sub terrestr|super terra/.test(traits)) return "Mondi rocciosi";
+  return profile.class || planet.type || "Classe non determinata";
+}
+function updateSimilarPlanetOptions(selectedPlanet) {
+  similarPlanetDestinations = [];
+  similarPlanetSelect.replaceChildren();
+  if (!selectedPlanet) {
+    similarPlanetSelect.add(new Option("Seleziona prima un pianeta", ""));
+    similarPlanetSelect.disabled = true;
+    return;
+  }
+  const selectedClass = getPlanetSimilarityClass(selectedPlanet);
+  for (const [systemId, system] of Object.entries(systems)) {
+    for (const planet of system.planets) {
+      if (planet === selectedPlanet || getPlanetSimilarityClass(planet) !== selectedClass) continue;
+      similarPlanetDestinations.push({ systemId, planet });
+    }
+  }
+  similarPlanetSelect.disabled = similarPlanetDestinations.length === 0;
+  similarPlanetSelect.add(new Option(
+    similarPlanetDestinations.length
+      ? `Pianeti simili · ${selectedClass}`
+      : `Nessun altro mondo della classe “${selectedClass}”`,
+    "",
+  ));
+  similarPlanetDestinations.forEach(({ systemId, planet }, index) => {
+    const system = systems[systemId];
+    similarPlanetSelect.add(new Option(`${planet.name} · ${system.shortName}`, String(index)));
+  });
+}
+similarPlanetSelect.addEventListener("change", () => {
+  const destination = similarPlanetDestinations[Number(similarPlanetSelect.value)];
+  if (destination) navigateToSystem(destination.systemId, destination.planet.name);
+});
 
 function renderMissionTimeline(planet) {
   const missions = missionsByPlanet[planet.name] || [];
@@ -1384,6 +1455,7 @@ function renderSystem(id) {
   if (!data) return;
   activeSystem = id;
   activePlanet = null;
+  updateSimilarPlanetOptions(null);
   document
     .querySelectorAll(".system-node")
     .forEach((node) =>
@@ -1419,23 +1491,24 @@ function renderSystem(id) {
   updateChatContext();
   applyMapFilterClasses();
   positionShip(id);
+  updateMapFocus();
 }
 
 function positionShip(id) {
   const node = document.querySelector(`.system-node[data-system="${id}"]`);
   if (!node) return;
-  const panelRect = map.getBoundingClientRect(),
-    rect = node.querySelector(".node-orbit").getBoundingClientRect(),
-    x = rect.left + rect.width / 2 - panelRect.left,
-    y = rect.top + rect.height / 2 - panelRect.top;
+  const nodes = document.getElementById("systemNodes"),
+    width = nodes.clientWidth,
+    height = nodes.clientHeight,
+    x = (parseFloat(node.style.getPropertyValue("--x")) / 100) * width,
+    y = (parseFloat(node.style.getPropertyValue("--y")) / 100) * height;
   if (id === "sol") {
     els.ship.style.opacity = "0";
     els.route.style.width = "0";
   } else {
     const home = document.querySelector('.system-node[data-system="sol"]'),
-      homeRect = home.querySelector(".node-orbit").getBoundingClientRect();
-    const hx = homeRect.left + homeRect.width / 2 - panelRect.left,
-      hy = homeRect.top + homeRect.height / 2 - panelRect.top,
+      hx = (parseFloat(home.style.getPropertyValue("--x")) / 100) * width,
+      hy = (parseFloat(home.style.getPropertyValue("--y")) / 100) * height,
       dx = x - hx,
       dy = y - hy;
     els.ship.style.opacity = "1";
@@ -1452,18 +1525,69 @@ function positionShip(id) {
       : "";
 }
 
-let zoom = 1;
+let zoom = 3;
 const zoomLabel = document.querySelector(".map-controls span");
 const map = document.querySelector(".map-panel");
+const mapLayers = [document.querySelector(".system-nodes"), document.querySelector(".constellation-lines")];
+let panX = 0, panY = 0, pointerStart = null, draggedMap = false;
+function updateMapFocus(systemId = activeSystem) {
+  const node = document.querySelector(`.system-node[data-system="${systemId}"]`);
+  if (!node) return;
+  const width = map.clientWidth, height = map.clientHeight;
+  const originX = width * 0.51, originY = height * 0.62;
+  const x = parseFloat(node.style.getPropertyValue("--x")) * width / 100;
+  const y = parseFloat(node.style.getPropertyValue("--y")) * height / 100;
+  map.style.setProperty("--focus-x", `${originX + (x - originX) * zoom + panX}px`);
+  map.style.setProperty("--focus-y", `${originY + (y - originY) * zoom + panY}px`);
+}
+function applyMapView(focusSystem = activeSystem) {
+  for (const layer of mapLayers) {
+    layer.style.setProperty("--map-zoom", zoom);
+    layer.style.setProperty("--map-pan-x", `${panX}px`);
+    layer.style.setProperty("--map-pan-y", `${panY}px`);
+  }
+  updateMapFocus(focusSystem);
+}
+applyMapView();
+zoomLabel.textContent = `${zoom.toFixed(1)}Ã—`;
 function setZoom(next) {
-  zoom = Math.max(0.8, Math.min(1.5, +next.toFixed(1)));
-  document.querySelector(".system-nodes").style.setProperty("--map-zoom", zoom);
-  document
-    .querySelector(".constellation-lines")
-    .style.setProperty("--map-zoom", zoom);
+  zoom = Math.max(0.8, Math.min(3.5, +next.toFixed(1)));
+  applyMapView();
   zoomLabel.textContent = `${zoom.toFixed(1)}×`;
   window.setTimeout(() => positionShip(activeSystem), 260);
 }
+map.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0 || event.target.closest(".map-controls, .map-class-filters, .map-heading, .map-filter-notice, .map-footnote")) return;
+  pointerStart = { id: event.pointerId, x: event.clientX, y: event.clientY, panX, panY };
+  draggedMap = false;
+});
+window.addEventListener("pointermove", (event) => {
+  if (!pointerStart || pointerStart.id !== event.pointerId) return;
+  const dx = event.clientX - pointerStart.x, dy = event.clientY - pointerStart.y;
+  if (!draggedMap && Math.hypot(dx, dy) < 4) return;
+  if (!draggedMap) {
+    draggedMap = true;
+    map.setPointerCapture(event.pointerId);
+    map.classList.add("dragging");
+  }
+  panX = pointerStart.panX + dx;
+  panY = pointerStart.panY + dy;
+  applyMapView();
+});
+function finishMapDrag(event) {
+  if (!pointerStart || pointerStart.id !== event.pointerId) return;
+  if (map.hasPointerCapture(event.pointerId)) map.releasePointerCapture(event.pointerId);
+  map.classList.remove("dragging");
+  pointerStart = null;
+}
+window.addEventListener("pointerup", finishMapDrag);
+window.addEventListener("pointercancel", finishMapDrag);
+map.addEventListener("click", (event) => {
+  if (!draggedMap) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  draggedMap = false;
+}, true);
 document
   .getElementById("zoomIn")
   .addEventListener("click", () => setZoom(zoom + 0.1));
@@ -1471,12 +1595,30 @@ document
   .getElementById("zoomOut")
   .addEventListener("click", () => setZoom(zoom - 0.1));
 document.getElementById("resetMap").addEventListener("click", () => {
+  panX = 0;
+  panY = 0;
   setZoom(1);
   renderSystem("sol");
 });
 window.addEventListener("resize", () => {
   renderSystemNodes();
   renderSystem(activeSystem);
+  centerSystemOnMap(activeSystem);
+  applyMapView();
+});
+
+const filterMenu = document.querySelector(".map-class-filters");
+const filterToggle = document.getElementById("mapFilterToggle");
+filterToggle.addEventListener("click", () => {
+  const isOpen = filterMenu.classList.toggle("open");
+  filterToggle.setAttribute("aria-expanded", String(isOpen));
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && filterMenu.classList.contains("open")) {
+    filterMenu.classList.remove("open");
+    filterToggle.setAttribute("aria-expanded", "false");
+    filterToggle.focus();
+  }
 });
 
 const chat = document.getElementById("dataChat");
@@ -1772,4 +1914,9 @@ document.getElementById("dataChatForm").addEventListener("submit", (event) => {
   sendToData(chatInput.value);
 });
 renderSystemNodes();
+const welcome = document.createElement("span");
+welcome.className = "system-welcome";
+welcome.textContent = "Benvenuto viandante e buon viaggio interstellare!";
+document.querySelector('.system-node[data-system="sol"]')?.append(welcome);
+window.setTimeout(() => welcome.remove(), 3000);
 renderSystem("sol");

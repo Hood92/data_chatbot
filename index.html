@@ -91,10 +91,12 @@
           ></svg>
           <div
             class="map-class-filters"
-            role="group"
-            aria-label="Filtra sistemi, pianeti, buchi neri e sonde"
           >
-            <span>FILTRI ATLANTE</span>
+            <button class="map-filter-toggle" id="mapFilterToggle" type="button" aria-expanded="false" aria-controls="mapFilterOptions">
+              <span class="hamburger-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span>FILTRI ATLANTE</span>
+            </button>
+            <div class="map-filter-options" id="mapFilterOptions" role="group" aria-label="Filtra sistemi, pianeti, buchi neri e sonde">
             <button type="button" data-planet-filter="rocky">Rocciosi</button>
             <button type="button" data-planet-filter="gas">Gassosi</button>
             <button type="button" data-planet-filter="hydrogen">
@@ -116,8 +118,10 @@
               Sonde storiche
             </button>
             <button type="button" id="resetPlanetFilters">Reset</button>
+            </div>
           </div>
-          <div class="route-line" aria-hidden="true">
+          <div class="system-nodes" id="systemNodes">
+            <div class="route-line" aria-hidden="true">
             <span class="route-progress"></span
             ><span class="ship" id="ship"
               ><svg viewBox="0 0 42 42">
@@ -128,8 +132,9 @@
                 <path d="m17 29-3 9 7-5 7 5-3-9" fill="#77c938" />
                 <circle cx="21" cy="18" r="3" fill="#061523" /></svg
             ></span>
+            </div>
           </div>
-          <div class="system-nodes" id="systemNodes"></div>
+          <div class="map-vignette" aria-hidden="true"></div>
           <div class="map-filter-notice" id="mapFilterNotice" hidden>
             <span class="filter-notice-icon">⌕</span
             ><span id="mapFilterText"></span
@@ -175,6 +180,12 @@
         >
           <div class="panel-topline">
             <span><i class="live-dot"></i> ARCHIVIO ESPLORATIVO</span>
+          </div>
+          <div class="similar-planet-control">
+            <label for="similarPlanetSelect">VIAGGIA VERSO UN MONDO SIMILE</label>
+            <select id="similarPlanetSelect" disabled>
+              <option value="">Seleziona prima un pianeta</option>
+            </select>
           </div>
           <div class="system-summary">
             <div class="system-overline">
